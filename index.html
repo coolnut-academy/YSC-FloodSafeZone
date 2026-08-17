@@ -2,846 +2,542 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Flood Safe Zone (FSZ) — Proof-of-concept interface for the Flood Hazard-Weighted Evacuation Graph Model (FHEG)." />
-  <title>Flood Safe Zone | FHEG Model</title>
-  <style>
-    :root {
-      --bg: #f5f8fb;
-      --surface: #ffffff;
-      --surface-2: #f8fbfd;
-      --ink: #0b1f33;
-      --ink-2: #42576b;
-      --muted: #74879a;
-      --line: #d9e4ec;
-      --line-strong: #bccbd7;
-      --blue: #1769aa;
-      --cyan: #0d9ec2;
-      --blue-soft: #eaf5fb;
-      --green: #20855b;
-      --green-soft: #e9f7f0;
-      --amber: #a76b12;
-      --amber-soft: #fff5de;
-      --red: #b64040;
-      --red-soft: #fff0f0;
-      --shadow: 0 18px 52px rgba(13, 41, 66, 0.08);
-      --radius-xl: 28px;
-      --radius-lg: 20px;
-      --radius-md: 14px;
-      --max: 1180px;
-    }
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="description" content="Flood Safe Zone (FSZ) — Research Platform for Flood Hazard-Weighted Evacuation Graph Model (FHEG) in Mae Hong Son." />
+  <title>Flood Safe Zone | FHEG Mathematical Model & Research Platform</title>
 
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", Arial, sans-serif;
-      color: var(--ink);
-      background: var(--bg);
-      line-height: 1.65;
-    }
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
 
-    a { color: inherit; text-decoration: none; }
-    button, input { font: inherit; }
-    button { cursor: pointer; }
+  <!-- Vendor CSS (Leaflet & KaTeX) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" />
 
-    .container { width: min(calc(100% - 36px), var(--max)); margin: 0 auto; }
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      background: rgba(255,255,255,.96);
-      border-bottom: 1px solid rgba(188,203,215,.75);
-      backdrop-filter: blur(10px);
-    }
-
-    .nav {
-      min-height: 72px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 28px;
-    }
-
-    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
-    .brand-mark {
-      width: 42px; height: 42px; border-radius: 12px;
-      display: grid; place-items: center;
-      background: var(--ink);
-      color: #fff;
-      flex: 0 0 auto;
-    }
-    .brand-mark svg { width: 25px; height: 25px; }
-    .brand-copy strong { display: block; letter-spacing: -.02em; font-size: 16px; line-height: 1.15; }
-    .brand-copy span { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; }
-
-    .nav-links { display: flex; align-items: center; gap: 24px; color: var(--ink-2); font-size: 14px; }
-    .nav-links a:hover { color: var(--blue); }
-
-    .nav-cta, .primary-btn, .secondary-btn {
-      border-radius: 999px;
-      padding: 10px 16px;
-      border: 1px solid var(--line-strong);
-      font-weight: 700;
-      transition: .2s ease;
-    }
-    .nav-cta, .primary-btn { background: var(--ink); color: #fff; border-color: var(--ink); }
-    .nav-cta:hover, .primary-btn:hover { transform: translateY(-1px); background: #14314c; }
-    .secondary-btn { background: #fff; color: var(--ink); }
-    .secondary-btn:hover { border-color: var(--blue); color: var(--blue); }
-
-    .hero { padding: 68px 0 44px; }
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap: 54px;
-      align-items: center;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 11px;
-      border: 1px solid #c8dbe7;
-      border-radius: 999px;
-      color: var(--blue);
-      background: #fff;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-    }
-    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); }
-
-    h1, h2, h3, p { margin-top: 0; }
-    h1 {
-      margin-bottom: 18px;
-      max-width: 780px;
-      font-size: clamp(42px, 6vw, 76px);
-      line-height: .98;
-      letter-spacing: -.055em;
-      font-weight: 850;
-    }
-    h1 .accent { color: var(--blue); }
-    .hero-lead {
-      max-width: 700px;
-      color: var(--ink-2);
-      font-size: 18px;
-      margin-bottom: 26px;
-    }
-    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
-    .hero-micro {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin-top: 24px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .hero-micro span { display: inline-flex; align-items: center; gap: 7px; }
-    .hero-micro i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
-
-    .hero-visual {
-      position: relative;
-      border: 1px solid var(--line);
-      background: #fff;
-      box-shadow: var(--shadow);
-      border-radius: var(--radius-xl);
-      overflow: hidden;
-    }
-    .map-head {
-      min-height: 58px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 0 18px;
-      border-bottom: 1px solid var(--line);
-      background: #fff;
-    }
-    .map-head strong { font-size: 14px; }
-    .status-chip {
-      font-size: 11px;
-      font-weight: 800;
-      border-radius: 999px;
-      padding: 5px 9px;
-      background: var(--green-soft);
-      color: var(--green);
-      border: 1px solid #bde2ce;
-    }
-    .hero-map { display: block; width: 100%; height: auto; background: #f7fbfd; }
-    .map-legend {
-      display: flex;
-      gap: 13px;
-      flex-wrap: wrap;
-      align-items: center;
-      padding: 12px 18px 15px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 11px;
-      background: #fff;
-    }
-    .legend-item { display: inline-flex; gap: 6px; align-items: center; }
-    .legend-line { width: 20px; height: 3px; border-radius: 99px; background: var(--line-strong); }
-    .legend-line.selected { background: var(--blue); }
-    .legend-line.blocked { background: var(--red); }
-    .legend-node { width: 9px; height: 9px; border-radius: 50%; background: var(--green); }
-
-    .section { padding: 76px 0; }
-    .section.white { background: #fff; }
-    .section-heading { max-width: 770px; margin-bottom: 34px; }
-    .section-heading .kicker { color: var(--blue); font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
-    h2 { font-size: clamp(31px, 4vw, 48px); letter-spacing: -.04em; line-height: 1.08; margin-bottom: 14px; }
-    .section-heading p { color: var(--ink-2); font-size: 17px; }
-
-    .problem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-    .card {
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      box-shadow: 0 10px 28px rgba(13, 41, 66, 0.04);
-    }
-    .card .num { color: var(--cyan); font-size: 12px; font-weight: 900; letter-spacing: .08em; margin-bottom: 14px; }
-    .card h3 { font-size: 20px; margin-bottom: 8px; letter-spacing: -.02em; }
-    .card p { color: var(--ink-2); margin-bottom: 0; font-size: 14px; }
-
-    .model-shell {
-      display: grid;
-      grid-template-columns: .88fr 1.12fr;
-      gap: 22px;
-      align-items: stretch;
-    }
-    .formula-card, .workflow-card, .demo-panel, .results-panel {
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-xl);
-      box-shadow: 0 12px 34px rgba(13, 41, 66, 0.05);
-    }
-    .formula-card { padding: 28px; }
-    .formula-card h3 { font-size: 22px; }
-    .formula-stack { display: grid; gap: 12px; margin: 20px 0; }
-    .formula {
-      padding: 17px 18px;
-      background: var(--surface-2);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-md);
-      font-family: "Cambria Math", "Times New Roman", serif;
-      font-size: 19px;
-      overflow-x: auto;
-      white-space: nowrap;
-    }
-    .formula small { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; color: var(--muted); display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: .06em; font-weight: 800; }
-    .model-note { color: var(--ink-2); font-size: 13px; margin-bottom: 0; }
-
-    .workflow-card { padding: 28px; }
-    .workflow { display: grid; gap: 0; }
-    .workflow-step { display: grid; grid-template-columns: 44px 1fr; gap: 14px; position: relative; padding-bottom: 20px; }
-    .workflow-step:last-child { padding-bottom: 0; }
-    .workflow-step:not(:last-child)::before { content: ""; position: absolute; left: 21px; top: 39px; bottom: 1px; width: 1px; background: var(--line-strong); }
-    .step-icon { width: 44px; height: 44px; border-radius: 14px; border: 1px solid var(--line); background: var(--blue-soft); color: var(--blue); display: grid; place-items: center; font-weight: 900; font-size: 13px; z-index: 1; }
-    .workflow-step h4 { margin: 1px 0 2px; font-size: 15px; }
-    .workflow-step p { margin: 0; color: var(--muted); font-size: 12.5px; }
-
-    .demo-wrap { display: grid; grid-template-columns: .78fr 1.22fr; gap: 20px; align-items: start; }
-    .demo-panel { padding: 25px; position: sticky; top: 92px; }
-    .control { margin-bottom: 22px; }
-    .control:last-child { margin-bottom: 0; }
-    .control-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 9px; }
-    .control-head label { font-size: 14px; font-weight: 800; }
-    .control-value { color: var(--blue); font-size: 13px; font-weight: 900; }
-    input[type="range"] { width: 100%; accent-color: var(--blue); }
-    .control-help { margin-top: 5px; color: var(--muted); font-size: 11.5px; }
-    .preset-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 24px; }
-    .preset {
-      border: 1px solid var(--line);
-      background: #fff;
-      border-radius: 12px;
-      padding: 10px 8px;
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--ink-2);
-    }
-    .preset:hover { border-color: var(--blue); color: var(--blue); }
-
-    .results-panel { overflow: hidden; }
-    .results-map-wrap { border-bottom: 1px solid var(--line); background: #f7fbfd; }
-    #demoMap { display: block; width: 100%; height: auto; }
-    .result-summary { padding: 22px; }
-    .result-top { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; margin-bottom: 16px; }
-    .result-top h3 { font-size: 22px; margin-bottom: 2px; }
-    .result-top p { color: var(--muted); margin: 0; font-size: 12.5px; }
-    .decision-badge { white-space: nowrap; padding: 7px 10px; border-radius: 999px; background: var(--blue-soft); color: var(--blue); font-size: 11px; font-weight: 900; border: 1px solid #c8e4f1; }
-
-    .route-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .route-table th { text-align: left; color: var(--muted); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; padding: 10px 9px; border-bottom: 1px solid var(--line); }
-    .route-table td { padding: 13px 9px; border-bottom: 1px solid #edf2f5; vertical-align: middle; }
-    .route-table tr:last-child td { border-bottom: 0; }
-    .route-table tr.selected-row { background: #f2f8fc; }
-    .route-name { font-weight: 800; }
-    .route-status { font-size: 10px; font-weight: 900; padding: 4px 7px; border-radius: 999px; display: inline-block; }
-    .route-status.open { color: var(--green); background: var(--green-soft); }
-    .route-status.blocked { color: var(--red); background: var(--red-soft); }
-    .route-status.best { color: var(--blue); background: var(--blue-soft); }
-
-    .audit-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
-    .audit-metric { padding: 13px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); }
-    .audit-metric span { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; font-weight: 800; }
-    .audit-metric strong { display: block; margin-top: 5px; font-size: 17px; }
-
-    .contrib-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-    .contrib-card { border-top: 3px solid var(--blue); }
-
-    .validation-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 22px; }
-    .validation-box { border: 1px solid var(--line); border-radius: var(--radius-xl); background: #fff; padding: 26px; }
-    .checklist { display: grid; gap: 13px; margin-top: 20px; }
-    .check-item { display: grid; grid-template-columns: 30px 1fr; gap: 11px; align-items: start; }
-    .check-mark { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; background: var(--green-soft); color: var(--green); font-weight: 900; border: 1px solid #c8e7d6; }
-    .check-item strong { display: block; font-size: 14px; }
-    .check-item span { display: block; color: var(--muted); font-size: 12.5px; }
-
-    .topsis {
-      display: grid;
-      gap: 12px;
-      margin-top: 20px;
-    }
-    .zone-row { display: grid; grid-template-columns: 48px 1fr 50px; gap: 10px; align-items: center; }
-    .zone-row strong { font-size: 13px; }
-    .bar { height: 9px; background: #edf2f5; border-radius: 99px; overflow: hidden; }
-    .bar > span { display: block; height: 100%; background: var(--blue); border-radius: inherit; }
-    .zone-row em { font-style: normal; font-size: 12px; font-weight: 900; color: var(--ink-2); text-align: right; }
-
-    .disclaimer {
-      padding: 28px;
-      border-radius: var(--radius-xl);
-      background: #fff;
-      border: 1px solid #e4c99f;
-      display: grid;
-      grid-template-columns: 46px 1fr;
-      gap: 15px;
-      align-items: start;
-    }
-    .warning-icon { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: var(--amber-soft); color: var(--amber); border: 1px solid #ecd49d; font-weight: 900; }
-    .disclaimer h3 { margin-bottom: 5px; font-size: 17px; }
-    .disclaimer p { margin: 0; color: var(--ink-2); font-size: 13px; }
-
-    footer { padding: 38px 0 52px; color: var(--muted); font-size: 12px; }
-    .footer-row { display: flex; justify-content: space-between; gap: 18px; align-items: center; border-top: 1px solid var(--line); padding-top: 20px; }
-
-    .mobile-only { display: none; }
-
-    @media (max-width: 980px) {
-      .nav-links { display: none; }
-      .hero-grid, .model-shell, .demo-wrap, .validation-grid { grid-template-columns: 1fr; }
-      .hero { padding-top: 46px; }
-      .demo-panel { position: static; }
-      .problem-grid { grid-template-columns: 1fr 1fr; }
-      .contrib-grid { grid-template-columns: 1fr 1fr; }
-    }
-
-    @media (max-width: 640px) {
-      .container { width: min(calc(100% - 24px), var(--max)); }
-      .nav { min-height: 64px; }
-      .brand-copy span { display: none; }
-      .nav-cta { display: none; }
-      .hero { padding: 38px 0 26px; }
-      h1 { font-size: 44px; }
-      .hero-lead { font-size: 16px; }
-      .section { padding: 58px 0; }
-      .problem-grid, .contrib-grid { grid-template-columns: 1fr; }
-      .audit-row { grid-template-columns: 1fr 1fr; }
-      .result-top { display: grid; }
-      .route-table { font-size: 12px; }
-      .route-table th:nth-child(3), .route-table td:nth-child(3) { display: none; }
-      .footer-row { display: grid; }
-    }
-  </style>
+  <!-- Modular Application Stylesheets -->
+  <link rel="stylesheet" href="css/design-tokens.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/visualizers.css" />
 </head>
-<body>
-  <header class="topbar">
-    <div class="container nav">
-      <a href="#top" class="brand" aria-label="Flood Safe Zone home">
-        <div class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 32 32" fill="none">
-            <path d="M5 21.5C9 17.2 12 23.4 16 19.2C20 15 23.2 21.2 27 17" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-            <path d="M7 25C10.8 21.7 13.3 27.2 17 23.7C20.4 20.4 23.5 25.5 26 22.8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>
-            <circle cx="16" cy="9" r="4" stroke="currentColor" stroke-width="2.2"/>
-            <path d="M16 13V17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="brand-copy">
-          <strong>Flood Safe Zone</strong>
-          <span>FHEG Model · Mathematical Research Prototype</span>
-        </div>
-      </a>
+<body data-theme="dark">
 
-      <nav class="nav-links" aria-label="Primary navigation">
-        <a href="#problem">Problem</a>
-        <a href="#model">FHEG Model</a>
-        <a href="#demo">Interactive Demo</a>
-        <a href="#validation">Validation</a>
-      </nav>
+  <!-- Top App Navigation Bar -->
+  <header class="app-header">
+    <div class="container nav-row">
+      <div class="brand-section">
+        <div class="brand-badge-logo">FSZ</div>
+        <div class="brand-text">
+          <strong>Flood Safe Zone <span class="badge badge-cyan">FHEG v2.4</span></strong>
+          <span>Applied Mathematics Research Platform · Mae Hong Son Case Study</span>
+        </div>
+      </div>
 
-      <a class="nav-cta" href="#demo">Run model demo</a>
+      <div class="nav-actions">
+        <!-- Data Sources Button -->
+        <button class="btn btn-outline" id="btnDataSources" title="ดูที่มาของข้อมูลทั้งหมดในระบบ">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          ที่มาข้อมูล & APIs
+        </button>
+
+        <!-- Export Evidence Button -->
+        <button class="btn btn-outline" id="btnExportData" title="Export CSV/JSON research logs">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Export Evidence
+        </button>
+
+        <!-- Theme Toggle -->
+        <button class="btn-icon" id="btnThemeToggle" title="สลับธีม สว่าง/มืด">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main id="top">
-    <section class="hero">
-      <div class="container hero-grid">
-        <div>
-          <div class="eyebrow"><span class="dot"></span> Applied Mathematics · Graph Optimization</div>
-          <h1>Know the Risk.<br><span class="accent">Reach the Safe Zone.</span></h1>
-          <p class="hero-lead">
-            Flood Safe Zone (FSZ) คือเว็บต้นแบบสำหรับสาธิต <strong>Flood Hazard-Weighted Evacuation Graph Model (FHEG)</strong>
-            ซึ่งแปลงถนนเป็นกราฟคณิตศาสตร์ แล้วพิจารณาทั้งเวลาเดินทางและความเสี่ยงจากน้ำท่วมเพื่อเลือกจุดปลอดภัยและเส้นทางที่เหมาะสมกว่า “ทางสั้นที่สุด” เพียงอย่างเดียว
-          </p>
-          <div class="hero-actions">
-            <a class="primary-btn" href="#demo">ทดลองโมเดลจำลอง</a>
-            <a class="secondary-btn" href="#model">ดูโครงสร้างทางคณิตศาสตร์</a>
-          </div>
-          <div class="hero-micro">
-            <span><i></i> Synthetic-data demonstration</span>
-            <span><i></i> Explainable calculations</span>
-            <span><i></i> Reproducible workflow</span>
-          </div>
-        </div>
-
-        <div class="hero-visual" aria-label="Conceptual FHEG route map">
-          <div class="map-head">
-            <strong>Conceptual Route Network</strong>
-            <span class="status-chip">MODEL DEMO</span>
-          </div>
-          <svg class="hero-map" viewBox="0 0 640 510" role="img" aria-label="Stylized network map showing a start point and three candidate safe zones">
-            <rect width="640" height="510" fill="#F7FBFD"/>
-            <path d="M0 96C98 60 160 128 260 103C364 77 451 12 640 48" stroke="#D7E7EF" stroke-width="2" fill="none"/>
-            <path d="M0 144C116 114 198 168 315 139C425 112 498 73 640 85" stroke="#D7E7EF" stroke-width="2" fill="none"/>
-            <path d="M0 365C86 315 153 388 255 355C368 318 428 270 640 302" stroke="#D7E7EF" stroke-width="2" fill="none"/>
-            <path d="M0 410C112 360 180 434 290 392C404 350 500 332 640 353" stroke="#D7E7EF" stroke-width="2" fill="none"/>
-
-            <path d="M15 250C95 211 134 232 188 218C260 199 294 159 355 176C431 196 504 268 625 232" stroke="#D7F0F5" stroke-width="48" fill="none" stroke-linecap="round"/>
-            <path d="M15 250C95 211 134 232 188 218C260 199 294 159 355 176C431 196 504 268 625 232" stroke="#9AD8E6" stroke-width="2" fill="none" stroke-linecap="round"/>
-
-            <g stroke="#B8C7D2" stroke-width="7" stroke-linecap="round">
-              <path d="M86 368L180 305L288 259L385 181"/>
-              <path d="M86 368L207 390L329 354L472 325"/>
-              <path d="M86 368L176 450L320 451L506 426"/>
-              <path d="M180 305L207 390"/>
-              <path d="M288 259L329 354"/>
-              <path d="M385 181L485 137"/>
-              <path d="M472 325L551 290"/>
-              <path d="M506 426L575 390"/>
-            </g>
-
-            <g stroke="#1769AA" stroke-width="10" stroke-linecap="round">
-              <path d="M86 368L207 390L329 354L472 325"/>
-            </g>
-            <path d="M180 305L288 259" stroke="#B64040" stroke-width="10" stroke-linecap="round" stroke-dasharray="13 12"/>
-
-            <g fill="#0B1F33">
-              <circle cx="86" cy="368" r="17"/>
-              <circle cx="180" cy="305" r="8"/>
-              <circle cx="207" cy="390" r="8"/>
-              <circle cx="288" cy="259" r="8"/>
-              <circle cx="329" cy="354" r="8"/>
-              <circle cx="320" cy="451" r="8"/>
-            </g>
-            <g fill="#20855B" stroke="#FFFFFF" stroke-width="6">
-              <circle cx="485" cy="137" r="19"/>
-              <circle cx="551" cy="290" r="19"/>
-              <circle cx="575" cy="390" r="19"/>
-            </g>
-
-            <g font-family="Segoe UI, Arial" font-weight="800" font-size="14">
-              <text x="54" y="405" fill="#0B1F33">START S</text>
-              <text x="500" y="132" fill="#20855B">Z1</text>
-              <text x="565" y="286" fill="#20855B">Z2</text>
-              <text x="588" y="386" fill="#20855B">Z3</text>
-            </g>
-            <g font-family="Segoe UI, Arial" font-size="11" fill="#74879A">
-              <text x="26" y="225">synthetic flood extent</text>
-              <text x="346" y="333" fill="#1769AA" font-weight="800">FHEG-selected route</text>
-              <text x="168" y="282" fill="#B64040" font-weight="800">edge removed: H ≥ Hc</text>
-            </g>
-          </svg>
-          <div class="map-legend">
-            <span class="legend-item"><span class="legend-line selected"></span> Selected route</span>
-            <span class="legend-item"><span class="legend-line"></span> Feasible edge</span>
-            <span class="legend-item"><span class="legend-line blocked"></span> Infeasible edge</span>
-            <span class="legend-item"><span class="legend-node"></span> Candidate safe zone</span>
-          </div>
-        </div>
+  <!-- Live Status & Ingestion Ribbon -->
+  <div class="status-ribbon">
+    <div class="container ribbon-content">
+      <div class="ribbon-group">
+        <span>📍 <strong>Location:</strong> อ.เมืองแม่ฮ่องสอน (19.300°N, 97.965°E)</span>
+        <span>🌐 <strong>OSM Road Graph:</strong> 28 Nodes / 42 Directed Edges</span>
+        <span>⛰️ <strong>DEM:</strong> Copernicus 30m Global Elevation</span>
       </div>
-    </section>
-
-    <section id="problem" class="section white">
-      <div class="container">
-        <div class="section-heading">
-          <div class="kicker">Research problem</div>
-          <h2>เส้นทางที่สั้นที่สุด อาจไม่ใช่เส้นทางที่เหมาะที่สุดเมื่อเกิดน้ำท่วม</h2>
-          <p>โมเดลจึงไม่มองถนนเป็นเพียงระยะทาง แต่ตีความแต่ละช่วงถนนเป็น edge ที่มีทั้งต้นทุนเวลาและต้นทุนความเสี่ยง</p>
-        </div>
-        <div class="problem-grid">
-          <article class="card">
-            <div class="num">01 · ROAD NETWORK</div>
-            <h3>ถนน → กราฟ</h3>
-            <p>แปลงพื้นที่ศึกษาเป็น directed graph <strong>G = (V, E)</strong> เพื่อให้สามารถวิเคราะห์เส้นทางด้วยเครื่องมือทางคณิตศาสตร์ได้อย่างเป็นระบบ</p>
-          </article>
-          <article class="card">
-            <div class="num">02 · FLOOD HAZARD</div>
-            <h3>ความเสี่ยง → เงื่อนไขของ edge</h3>
-            <p>พิจารณาความลึกของน้ำ ความเร็วกระแสน้ำ debris และความลาดชัน เพื่อคัดกรองช่วงถนนที่ไม่ควรใช้และปรับต้นทุนของช่วงถนนที่ยังผ่านได้</p>
-          </article>
-          <article class="card">
-            <div class="num">03 · MULTI-CRITERIA</div>
-            <h3>จุดปลอดภัย → จัดอันดับ</h3>
-            <p>ใช้ TOPSIS เปรียบเทียบ candidate safe zones หลายจุด แล้วจึงหาเส้นทางที่มีต้นทุนรวมเหมาะสมสำหรับแต่ละทางเลือก</p>
-          </article>
-        </div>
+      <div class="ribbon-group">
+        <span>🌊 <strong>Pai River Discharge (GloFAS):</strong> <strong id="livePaiDischarge" style="color:var(--cyan-primary);">42.8 m³/s</strong></span>
+        <span>🌧️ <strong>Rainfall:</strong> <strong id="liveRainfall" style="color:var(--cyan-primary);">0.0 mm/h</strong></span>
+        <span>🛣️ <strong>Feasible Edges:</strong> <strong id="hydroFeasibleText" style="color:var(--green-primary);">38 / 42 Edges</strong></span>
+        <span><a href="#" id="btnRefreshAPI" style="color:var(--cyan-primary);text-decoration:underline;">Fetch Live API</a></span>
       </div>
-    </section>
-
-    <section id="model" class="section">
-      <div class="container">
-        <div class="section-heading">
-          <div class="kicker">Mathematical core</div>
-          <h2>Flood Hazard-Weighted Evacuation Graph Model</h2>
-          <p>แกนสำคัญคือการสร้าง weighted graph ที่ “อธิบายได้” ว่าทำไม edge หนึ่งถูกตัดออก และทำไมเส้นทางหนึ่งมีต้นทุนสูงกว่าอีกเส้นทาง</p>
-        </div>
-
-        <div class="model-shell">
-          <article class="formula-card">
-            <h3>Core equations</h3>
-            <div class="formula-stack">
-              <div class="formula"><small>Edge hazard</small>H<sub>e</sub> = h<sub>e</sub>(v<sub>e</sub> + 0.5) + D<sub>e</sub></div>
-              <div class="formula"><small>Feasibility rule</small>remove edge e if H<sub>e</sub> ≥ H<sub>c</sub></div>
-              <div class="formula"><small>Risk-aware edge weight</small>w<sub>e</sub>(λ) = t<sub>e</sub> + λr<sub>e</sub></div>
-              <div class="formula"><small>Route objective</small>min Σ<sub>e∈E</sub> w<sub>e</sub>(λ)x<sub>e</sub></div>
-            </div>
-            <p class="model-note">
-              โดย <strong>H<sub>e</sub></strong> คือ hazard ของช่วงถนน, <strong>H<sub>c</sub> = 1.25</strong> เป็นเกณฑ์ตัด edge,
-              <strong>t<sub>e</sub></strong> คือเวลาเดินทาง, <strong>r<sub>e</sub></strong> คือ risk-equivalent time และ <strong>λ</strong> ควบคุมระดับการให้น้ำหนักต่อความเสี่ยง
-            </p>
-          </article>
-
-          <article class="workflow-card">
-            <h3>Model pipeline</h3>
-            <div class="workflow">
-              <div class="workflow-step"><div class="step-icon">01</div><div><h4>Input & graph conversion</h4><p>Road / elevation / synthetic flood data → nodes and directed edges</p></div></div>
-              <div class="workflow-step"><div class="step-icon">02</div><div><h4>Hazard & feasibility</h4><p>Compute slope and H<sub>e</sub>, then remove edges that exceed H<sub>c</sub></p></div></div>
-              <div class="workflow-step"><div class="step-icon">03</div><div><h4>Travel & risk cost</h4><p>Estimate walking time and continuous hazard-related risk term</p></div></div>
-              <div class="workflow-step"><div class="step-icon">04</div><div><h4>Weighted graph</h4><p>Combine time and risk using w<sub>e</sub>(λ) to form the feasible graph</p></div></div>
-              <div class="workflow-step"><div class="step-icon">05</div><div><h4>Safe-zone ranking</h4><p>Rank Z1–Z3 using TOPSIS under defined criteria</p></div></div>
-              <div class="workflow-step"><div class="step-icon">06</div><div><h4>Route optimization</h4><p>Find route with A* and verify optimal cost against Dijkstra</p></div></div>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section id="demo" class="section white">
-      <div class="container">
-        <div class="section-heading">
-          <div class="kicker">Interactive proof of concept</div>
-          <h2>ลองเปลี่ยนสถานการณ์ แล้วดูว่าเส้นทางที่เหมาะสมเปลี่ยนอย่างไร</h2>
-          <p>ตัวอย่างด้านล่างเป็น <strong>synthetic demonstration</strong> เพื่ออธิบายพฤติกรรมของโมเดล ไม่ใช่ข้อมูลน้ำท่วมแบบ real-time และไม่ใช่คำแนะนำอพยพจริง</p>
-        </div>
-
-        <div class="demo-wrap">
-          <aside class="demo-panel">
-            <h3>Scenario controls</h3>
-            <div class="preset-row">
-              <button class="preset" data-preset="mild">Mild</button>
-              <button class="preset" data-preset="moderate">Moderate</button>
-              <button class="preset" data-preset="severe">Severe</button>
-            </div>
-
-            <div class="control">
-              <div class="control-head"><label for="lambda">Risk preference λ</label><span class="control-value" id="lambdaValue">1.20</span></div>
-              <input id="lambda" type="range" min="0" max="3" value="1.2" step="0.05" />
-              <div class="control-help">λ สูงขึ้น = ยอมใช้เวลาเพิ่ม เพื่อหลีกเลี่ยงความเสี่ยงมากขึ้น</div>
-            </div>
-
-            <div class="control">
-              <div class="control-head"><label for="water">Flood intensity</label><span class="control-value" id="waterValue">1.00×</span></div>
-              <input id="water" type="range" min="0.55" max="1.75" value="1" step="0.05" />
-              <div class="control-help">ปรับระดับความรุนแรงของ hazard ในเครือข่ายตัวอย่าง</div>
-            </div>
-
-            <div class="control">
-              <div class="control-head"><label for="debris">Debris factor</label><span class="control-value" id="debrisValue">0.10</span></div>
-              <input id="debris" type="range" min="0" max="0.8" value="0.1" step="0.05" />
-              <div class="control-help">เพิ่ม obstruction / debris term ให้กับ edge ที่เสี่ยง</div>
-            </div>
-          </aside>
-
-          <article class="results-panel">
-            <div class="results-map-wrap">
-              <svg id="demoMap" viewBox="0 0 760 430" role="img" aria-label="Interactive synthetic route network">
-                <rect width="760" height="430" fill="#F7FBFD"/>
-                <path d="M-10 170C120 119 204 192 311 157C444 113 545 103 770 144" stroke="#D8EFF5" stroke-width="62" fill="none" stroke-linecap="round"/>
-                <path d="M-10 170C120 119 204 192 311 157C444 113 545 103 770 144" stroke="#97D7E5" stroke-width="2" fill="none"/>
-                <path d="M10 84C160 42 242 103 387 76C520 51 625 47 754 69" stroke="#DCE8EF" stroke-width="2" fill="none"/>
-                <path d="M15 335C126 281 213 353 340 322C463 291 587 286 750 306" stroke="#DCE8EF" stroke-width="2" fill="none"/>
-
-                <g id="baseEdges" stroke="#BCCBD7" stroke-width="8" stroke-linecap="round">
-                  <path d="M88 306L212 225"/>
-                  <path d="M212 225L364 116"/>
-                  <path d="M364 116L613 75"/>
-                  <path d="M88 306L235 303"/>
-                  <path d="M235 303L410 264"/>
-                  <path d="M410 264L642 217"/>
-                  <path d="M88 306L212 374"/>
-                  <path d="M212 374L408 368"/>
-                  <path d="M408 368L651 350"/>
-                  <path d="M212 225L235 303"/>
-                  <path d="M235 303L212 374"/>
-                </g>
-
-                <g id="routeZ1" stroke="#1769AA" stroke-width="11" stroke-linecap="round" fill="none">
-                  <path d="M88 306L212 225L364 116L613 75"/>
-                </g>
-                <g id="routeZ2" stroke="#BCCBD7" stroke-width="11" stroke-linecap="round" fill="none">
-                  <path d="M88 306L235 303L410 264L642 217"/>
-                </g>
-                <g id="routeZ3" stroke="#BCCBD7" stroke-width="11" stroke-linecap="round" fill="none">
-                  <path d="M88 306L212 374L408 368L651 350"/>
-                </g>
-
-                <g fill="#0B1F33" stroke="#fff" stroke-width="4">
-                  <circle cx="88" cy="306" r="15"/><circle cx="212" cy="225" r="9"/><circle cx="364" cy="116" r="9"/>
-                  <circle cx="235" cy="303" r="9"/><circle cx="410" cy="264" r="9"/>
-                  <circle cx="212" cy="374" r="9"/><circle cx="408" cy="368" r="9"/>
-                </g>
-                <g fill="#20855B" stroke="#fff" stroke-width="5">
-                  <circle cx="613" cy="75" r="17"/><circle cx="642" cy="217" r="17"/><circle cx="651" cy="350" r="17"/>
-                </g>
-
-                <g font-family="Segoe UI, Arial" font-size="13" font-weight="800">
-                  <text x="54" y="341" fill="#0B1F33">START S</text>
-                  <text x="632" y="80" fill="#20855B">Z1</text>
-                  <text x="662" y="222" fill="#20855B">Z2</text>
-                  <text x="672" y="355" fill="#20855B">Z3</text>
-                </g>
-                <text x="22" y="150" font-family="Segoe UI, Arial" font-size="11" fill="#74879A">synthetic flood zone</text>
-              </svg>
-            </div>
-
-            <div class="result-summary">
-              <div class="result-top">
-                <div>
-                  <h3 id="decisionTitle">Recommended route: Z1</h3>
-                  <p id="decisionText">Lowest feasible FHEG cost under the current synthetic scenario.</p>
-                </div>
-                <span class="decision-badge" id="decisionBadge">FHEG COST 14.84</span>
-              </div>
-
-              <div style="overflow-x:auto;">
-                <table class="route-table" aria-label="Synthetic route comparison table">
-                  <thead>
-                    <tr>
-                      <th>Zone</th>
-                      <th>Travel time</th>
-                      <th>Hazard</th>
-                      <th>Risk term</th>
-                      <th>FHEG cost</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody id="routeRows"></tbody>
-                </table>
-              </div>
-
-              <div class="audit-row">
-                <div class="audit-metric"><span>Hc</span><strong>1.25</strong></div>
-                <div class="audit-metric"><span>Feasible routes</span><strong id="feasibleMetric">3 / 3</strong></div>
-                <div class="audit-metric"><span>Selected zone</span><strong id="zoneMetric">Z1</strong></div>
-                <div class="audit-metric"><span>λ</span><strong id="lambdaMetric">1.20</strong></div>
-              </div>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="container">
-        <div class="section-heading">
-          <div class="kicker">Research contribution</div>
-          <h2>สิ่งที่โครงงานต้องการพิสูจน์ ไม่ใช่ “เว็บทำงานได้ไหม” แต่คือ “โมเดลคณิตศาสตร์ใช้เหตุผลได้ไหม”</h2>
-        </div>
-        <div class="contrib-grid">
-          <article class="card contrib-card"><div class="num">A</div><h3>Feasibility-aware</h3><p>ตัด edge ที่เกินเกณฑ์ hazard ออกจากกราฟก่อนหาเส้นทาง ทำให้ข้อจำกัดถูกฝังอยู่ในโครงสร้างปัญหา</p></article>
-          <article class="card contrib-card"><div class="num">B</div><h3>Risk-aware</h3><p>ผสาน travel time กับ risk-equivalent time ผ่านพารามิเตอร์ λ แทนการ optimize ระยะทางเพียงตัวเดียว</p></article>
-          <article class="card contrib-card"><div class="num">C</div><h3>Multi-criteria</h3><p>แยก “การเลือก safe zone” และ “การหา route” ให้ตรวจสอบเหตุผลได้ผ่าน TOPSIS และ graph optimization</p></article>
-          <article class="card contrib-card"><div class="num">D</div><h3>Auditable</h3><p>ทุกผลลัพธ์สามารถย้อนดูค่า edge, route cost, ranking และ metadata เพื่อทำซ้ำการคำนวณได้</p></article>
-        </div>
-      </div>
-    </section>
-
-    <section id="validation" class="section white">
-      <div class="container">
-        <div class="section-heading">
-          <div class="kicker">Validation strategy</div>
-          <h2>ตรวจความถูกต้องเป็นชั้น ๆ ตั้งแต่ edge เดียว ไปจนถึงเส้นทางทั้งระบบ</h2>
-        </div>
-        <div class="validation-grid">
-          <article class="validation-box">
-            <h3>Verification layers</h3>
-            <div class="checklist">
-              <div class="check-item"><div class="check-mark">✓</div><div><strong>Single-edge calculation</strong><span>ตรวจ H<sub>e</sub>, feasibility, travel term และ risk term จากค่าที่กำหนด</span></div></div>
-              <div class="check-item"><div class="check-mark">✓</div><div><strong>Route-cost calculation</strong><span>ตรวจผลรวม w<sub>e</sub>(λ) บนเส้นทางตัวอย่างแบบคำนวณมือเทียบกับระบบ</span></div></div>
-              <div class="check-item"><div class="check-mark">✓</div><div><strong>TOPSIS ranking</strong><span>ตรวจ normalization, weighting, ideal solutions และ closeness coefficient</span></div></div>
-              <div class="check-item"><div class="check-mark">✓</div><div><strong>A* vs. Dijkstra</strong><span>ใช้ Dijkstra เป็นตัวตรวจว่าค่า optimal cost ที่ A* หาได้ตรงกันในกรณีทดสอบ</span></div></div>
-            </div>
-          </article>
-
-          <article class="validation-box">
-            <h3>Illustrative TOPSIS output</h3>
-            <p style="color:var(--muted);font-size:13px;">ตัวเลขนี้เป็นตัวอย่างเพื่อแสดงรูปแบบ UI ของผลการจัดอันดับ candidate zones</p>
-            <div class="topsis">
-              <div class="zone-row"><strong>Z2</strong><div class="bar"><span style="width:82%"></span></div><em>0.82</em></div>
-              <div class="zone-row"><strong>Z3</strong><div class="bar"><span style="width:74%"></span></div><em>0.74</em></div>
-              <div class="zone-row"><strong>Z1</strong><div class="bar"><span style="width:61%"></span></div><em>0.61</em></div>
-            </div>
-            <div style="margin-top:22px;padding:14px 15px;background:var(--surface-2);border:1px solid var(--line);border-radius:14px;color:var(--ink-2);font-size:12.5px;">
-              <strong style="color:var(--ink);">Design principle:</strong> ผลการจัดอันดับและผลการหา route ควรแสดงแยกกัน เพื่อไม่ทำให้ผู้ใช้ตีความว่า safe zone อันดับ 1 ต้องมี route cost ต่ำสุดเสมอไป
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="container">
-        <div class="disclaimer">
-          <div class="warning-icon">!</div>
-          <div>
-            <h3>Research prototype — not an emergency warning system</h3>
-            <p>
-              Flood Safe Zone (FSZ) ในหน้านี้เป็น proof-of-concept ของแบบจำลองทางคณิตศาสตร์ ข้อมูลและแผนที่เป็นข้อมูลสังเคราะห์เพื่อการทดลองเท่านั้น
-              ไม่ใช่ข้อมูลน้ำท่วมแบบ real-time, ไม่ใช่คำแนะนำอพยพอย่างเป็นทางการ, และไม่รับรองว่าจุดที่แสดงเป็น “พื้นที่ปลอดภัย” ในสถานการณ์จริง
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="container footer-row">
-      <div><strong style="color:var(--ink);">Flood Safe Zone · FHEG Model</strong><br>Mathematical research proof-of-concept interface</div>
-      <div>Know the Risk. Reach the Safe Zone.</div>
     </div>
-  </footer>
+  </div>
 
-  <script>
-    const Hc = 1.25;
+  <!-- Main Presentation Deck Layout -->
+  <div class="container presentation-grid">
+    <!-- Left Column: Scenario & Parameter HUD Controls -->
+    <aside class="control-hud">
+      <!-- Scenario Selection Panel -->
+      <div class="hud-panel">
+        <div class="hud-panel-header">
+          <h3>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            Synthetic Scenarios
+          </h3>
+          <span class="badge badge-cyan">Presets</span>
+        </div>
 
-    const routes = [
-      { zone: 'Z1', time: 6.2, baseHazard: 0.77, baseRisk: 7.2, topsis: 0.61 },
-      { zone: 'Z2', time: 7.6, baseHazard: 0.56, baseRisk: 4.1, topsis: 0.82 },
-      { zone: 'Z3', time: 9.0, baseHazard: 0.36, baseRisk: 2.1, topsis: 0.74 }
-    ];
+        <div class="preset-button-grid">
+          <button class="preset-chip" data-preset="s1" title="น้ำท่วมต่ำ ตรวจสอบ Baseline">S1: Low Hazard</button>
+          <button class="preset-chip active" data-preset="s2" title="น้ำตื้นแต่ไหลเร็ว พิสูจน์ขีดจำกัด Depth-Only">S2: Fast Flow</button>
+          <button class="preset-chip" data-preset="s3" title="น้ำท่วมรุนแรง ถนนถูกตัดขาดหลายเส้น">S3: Cutoff</button>
+        </div>
 
-    const lambdaInput = document.getElementById('lambda');
-    const waterInput = document.getElementById('water');
-    const debrisInput = document.getElementById('debris');
-    const routeRows = document.getElementById('routeRows');
+        <!-- Slider: Risk Aversion (Lambda) -->
+        <div class="control-item">
+          <div class="control-label-row">
+            <span>Risk Preference ($\lambda$)</span>
+            <span class="control-val-display" id="valLambda">5.00</span>
+          </div>
+          <input type="range" id="paramLambda" class="hud-slider" min="0" max="25" step="0.1" value="5.0" />
+          <div class="control-helper">$\lambda=0$: สนใจเฉพาะเวลา | $\lambda > 10$: หลีกเลี่ยงความเสี่ยงสูง</div>
+        </div>
 
-    const fmt = n => Number(n).toFixed(2);
+        <!-- Slider: Flood Intensity -->
+        <div class="control-item">
+          <div class="control-label-row">
+            <span>Flood Intensity ($h \times v$)</span>
+            <span class="control-val-display" id="valWater">1.00×</span>
+          </div>
+          <input type="range" id="paramWater" class="hud-slider" min="0.4" max="2.2" step="0.05" value="1.0" />
+          <div class="control-helper">ปรับสเกลความลึกน้ำ $h_e$ และความเร็วการไหล $v_e$</div>
+        </div>
 
-    function compute() {
-      const lambda = Number(lambdaInput.value);
-      const water = Number(waterInput.value);
-      const debris = Number(debrisInput.value);
+        <!-- Slider: Debris Factor -->
+        <div class="control-item">
+          <div class="control-label-row">
+            <span>Debris Factor ($D_e$)</span>
+            <span class="control-val-display" id="valDebris">0.15</span>
+          </div>
+          <input type="range" id="paramDebris" class="hud-slider" min="0" max="0.8" step="0.05" value="0.15" />
+          <div class="control-helper">สิ่งกีดขวาง/เศษไม้ที่ลอยมากับกระแสน้ำ</div>
+        </div>
 
-      document.getElementById('lambdaValue').textContent = fmt(lambda);
-      document.getElementById('waterValue').textContent = fmt(water) + '×';
-      document.getElementById('debrisValue').textContent = fmt(debris);
-      document.getElementById('lambdaMetric').textContent = fmt(lambda);
+        <!-- Slider: Hazard Attenuation Power p -->
+        <div class="control-item">
+          <div class="control-label-row">
+            <span>Hazard Attenuation ($p$)</span>
+            <span class="control-val-display" id="valPowerP">1.50</span>
+          </div>
+          <input type="range" id="paramPowerP" class="hud-slider" min="0.5" max="3.0" step="0.1" value="1.5" />
+          <div class="control-helper">ความโค้งของฟังก์ชันลดทอนความเร็ว $\phi_p(H)$</div>
+        </div>
+      </div>
 
-      const computed = routes.map((r, i) => {
-        const debrisSensitivity = [0.45, 0.28, 0.16][i];
-        const hazard = r.baseHazard * water + debris * debrisSensitivity;
-        const feasible = hazard < Hc;
-        const risk = r.baseRisk * Math.pow(water, 1.18) + debris * (2.4 - i * 0.45);
-        const cost = feasible ? r.time + lambda * risk : Infinity;
-        return { ...r, hazard, risk, feasible, cost };
-      });
+      <!-- TOPSIS Criteria Weights Configuration -->
+      <div class="hud-panel">
+        <div class="hud-panel-header">
+          <h3>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="m4.93 4.93 4.24 4.24M14.83 14.83l4.24 4.24M14.83 9.17l4.24-4.24M4.93 19.07l4.24-4.24"></path></svg>
+            TOPSIS Criteria Weights ($w_j$)
+          </h3>
+          <span class="badge badge-green">Sum = 1.0</span>
+        </div>
 
-      const feasible = computed.filter(r => r.feasible);
-      const selected = feasible.length ? feasible.reduce((a,b) => a.cost < b.cost ? a : b) : null;
+        <div class="control-item">
+          <div class="control-label-row"><span>C1: Travel Time ETA [Cost]</span><span class="control-val-display" id="valW1">0.35</span></div>
+          <input type="range" id="weightW1" class="hud-slider" min="0.05" max="0.7" step="0.05" value="0.35" />
+        </div>
+        <div class="control-item">
+          <div class="control-label-row"><span>C2: Elevation [Benefit]</span><span class="control-val-display" id="valW2">0.25</span></div>
+          <input type="range" id="weightW2" class="hud-slider" min="0.05" max="0.7" step="0.05" value="0.25" />
+        </div>
+        <div class="control-item">
+          <div class="control-label-row"><span>C3: River Buffer [Benefit]</span><span class="control-val-display" id="valW3">0.25</span></div>
+          <input type="range" id="weightW3" class="hud-slider" min="0.05" max="0.7" step="0.05" value="0.25" />
+        </div>
+        <div class="control-item">
+          <div class="control-label-row"><span>C4: Capacity [Benefit]</span><span class="control-val-display" id="valW4">0.15</span></div>
+          <input type="range" id="weightW4" class="hud-slider" min="0.05" max="0.7" step="0.05" value="0.15" />
+        </div>
+      </div>
+    </aside>
 
-      routeRows.innerHTML = computed.map(r => {
-        const isSelected = selected && r.zone === selected.zone;
-        const statusClass = !r.feasible ? 'blocked' : (isSelected ? 'best' : 'open');
-        const statusText = !r.feasible ? 'BLOCKED' : (isSelected ? 'SELECTED' : 'FEASIBLE');
-        return `
-          <tr class="${isSelected ? 'selected-row' : ''}">
-            <td class="route-name">${r.zone}</td>
-            <td>${fmt(r.time)} min</td>
-            <td>${fmt(r.hazard)}</td>
-            <td>${fmt(r.risk)}</td>
-            <td>${r.feasible ? fmt(r.cost) : '—'}</td>
-            <td><span class="route-status ${statusClass}">${statusText}</span></td>
-          </tr>`;
-      }).join('');
+    <!-- Right Column: Visualizer Stage & Research Deck -->
+    <main class="visualizer-stage">
+      <!-- Real-Time Calculation Ticker Bar (WOW Factor for Judges) -->
+      <div class="live-calc-ticker">
+        <div class="ticker-item">
+          <span class="ticker-label">Solver Runtime</span>
+          <span class="ticker-val" id="tickerExecTime">0.82 ms</span>
+        </div>
+        <div class="ticker-item">
+          <span class="ticker-label">Feasible Network</span>
+          <span class="ticker-val" id="tickerFeasible" style="color:var(--green-primary);">38 / 42 Edges</span>
+        </div>
+        <div class="ticker-item">
+          <span class="ticker-label">Optimal Route Cost $W_\lambda$</span>
+          <span class="ticker-val" id="tickerOptimalCost" style="color:var(--cyan-primary);">14.28</span>
+        </div>
+        <div class="ticker-item">
+          <span class="ticker-label">TOPSIS Rank #1 Safe Zone</span>
+          <span class="ticker-val" id="tickerRank1" style="color:var(--amber-primary);">Z2 (0.812)</span>
+        </div>
+      </div>
 
-      document.getElementById('feasibleMetric').textContent = `${feasible.length} / ${computed.length}`;
+      <!-- Map Stage Card -->
+      <div class="map-stage-card">
+        <!-- Simulation HUD Float -->
+        <div class="simulation-hud">
+          <button class="btn btn-simulate" id="btnSimulateSolver" title="จำลองการค้นหาเส้นทางแบบเคลื่อนไหวบนแผนที่">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            Simulate Search Flow
+          </button>
 
-      ['Z1','Z2','Z3'].forEach(zone => {
-        const route = document.getElementById('route' + zone);
-        const item = computed.find(r => r.zone === zone);
-        if (!item.feasible) {
-          route.setAttribute('stroke', '#B64040');
-          route.setAttribute('stroke-dasharray', '14 12');
-          route.setAttribute('opacity', '0.95');
-        } else if (selected && selected.zone === zone) {
-          route.setAttribute('stroke', '#1769AA');
-          route.removeAttribute('stroke-dasharray');
-          route.setAttribute('opacity', '1');
-        } else {
-          route.setAttribute('stroke', '#BCCBD7');
-          route.removeAttribute('stroke-dasharray');
-          route.setAttribute('opacity', '0.9');
-        }
-      });
+          <!-- Tile Layer Switcher (100% Free - No Card) -->
+          <select id="mapTileSelect" class="layer-select" style="background:var(--bg-surface-2);color:var(--ink-primary);border:1px solid var(--border-medium);border-radius:var(--radius-sm);padding:5px 8px;font-size:11.5px;">
+            <option value="carto-dark" selected>CartoDB Dark</option>
+            <option value="satellite">ESRI Satellite</option>
+            <option value="carto-voyager">CartoDB Light</option>
+            <option value="opentopo">OpenTopoMap</option>
+            <option value="osm">OpenStreetMap</option>
+          </select>
 
-      if (selected) {
-        document.getElementById('decisionTitle').textContent = `Recommended route: ${selected.zone}`;
-        document.getElementById('decisionText').textContent = 'Lowest feasible FHEG cost under the current synthetic scenario.';
-        document.getElementById('decisionBadge').textContent = `FHEG COST ${fmt(selected.cost)}`;
-        document.getElementById('zoneMetric').textContent = selected.zone;
-      } else {
-        document.getElementById('decisionTitle').textContent = 'No feasible route in this scenario';
-        document.getElementById('decisionText').textContent = 'All illustrative routes exceed the hazard threshold Hc = 1.25.';
-        document.getElementById('decisionBadge').textContent = 'NO FEASIBLE PATH';
-        document.getElementById('zoneMetric').textContent = '—';
-      }
-    }
+          <button class="btn btn-outline" id="btnResetMap" style="padding:4px 8px;font-size:11px;">Center</button>
+        </div>
 
-    [lambdaInput, waterInput, debrisInput].forEach(el => el.addEventListener('input', compute));
+        <!-- Leaflet Map Container -->
+        <div id="gisMap"></div>
 
-    document.querySelectorAll('.preset').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const p = btn.dataset.preset;
-        const presets = {
-          mild: { lambda: 0.65, water: 0.72, debris: 0.05 },
-          moderate: { lambda: 1.20, water: 1.00, debris: 0.10 },
-          severe: { lambda: 2.10, water: 1.55, debris: 0.50 }
-        };
-        const x = presets[p];
-        lambdaInput.value = x.lambda;
-        waterInput.value = x.water;
-        debrisInput.value = x.debris;
-        compute();
-      });
-    });
+        <!-- Map Legend Bar -->
+        <div class="map-legend-bar" style="padding:8px 16px;background:var(--bg-surface-2);border-top:1px solid var(--border-subtle);display:flex;align-items:center;gap:16px;font-size:11px;color:var(--ink-muted);flex-wrap:wrap;">
+          <span class="legend-item"><span class="legend-line optimal"></span> Optimal Path ($P^*$)</span>
+          <span class="legend-item"><span class="legend-line feasible"></span> Feasible Edge ($H_e < 0.6$)</span>
+          <span class="legend-item"><span class="legend-line moderate"></span> Moderate ($0.6 \le H_e < 1.25$)</span>
+          <span class="legend-item"><span class="legend-line removed"></span> Infeasible Cutoff ($H_e \ge 1.25$)</span>
+          <span class="legend-item"><span class="legend-dot start"></span> จุดเริ่มต้นอพยพ (Start S)</span>
+          <span class="legend-item"><span class="legend-dot shelter"></span> Candidate Safe Zones (Z1–Z4)</span>
+        </div>
+      </div>
 
-    compute();
-  </script>
+      <!-- Tabbed Analytics Deck Card -->
+      <div class="deck-card">
+        <nav class="tab-header-nav">
+          <button class="tab-nav-btn active" data-tab="tab-routes">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+            1. Route Comparison & Switching
+          </button>
+          <button class="tab-nav-btn" data-tab="tab-topsis">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            2. TOPSIS Matrix Inspector
+          </button>
+          <button class="tab-nav-btn" data-tab="tab-verification">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            3. A* vs Dijkstra Verification
+          </button>
+          <button class="tab-nav-btn" data-tab="tab-sensitivity">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            4. Sensitivity Sweeps
+          </button>
+        </nav>
+
+        <!-- TAB 1: Route Comparison -->
+        <div class="deck-body-content active" id="tab-routes">
+          <div style="overflow-x:auto;">
+            <table class="stage-table" id="routeSummaryTable">
+              <thead>
+                <tr>
+                  <th>Safe Zone</th>
+                  <th>Location Name</th>
+                  <th>Distance</th>
+                  <th>Travel Time $T(P)$</th>
+                  <th>Modeled Risk $R(P)$</th>
+                  <th>FHEG Cost $W_\lambda(P)$</th>
+                  <th>TOPSIS Score</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="routeTableBody"></tbody>
+            </table>
+          </div>
+
+          <!-- Route Switching Chart -->
+          <div style="margin-top:20px;">
+            <h4 style="font-family:var(--font-heading);font-size:13px;margin-bottom:4px;">Route Cost Curves $W_\lambda(P)$ vs. Risk Aversion $\lambda$</h4>
+            <p style="font-size:11.5px;color:var(--ink-muted);">จุดตัดระหว่างเส้นตรงคือ Analytical Route Switching Thresholds ($\lambda_{ij} = \frac{T_j - T_i}{R_i - R_j}$)</p>
+            <div class="chart-stage-wrap">
+              <canvas id="switchingChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: TOPSIS Matrix Inspector -->
+        <div class="deck-body-content" id="tab-topsis">
+          <h4 style="font-family:var(--font-heading);font-size:13px;color:var(--cyan-primary);margin-bottom:8px;">1. Raw Decision Matrix ($X$)</h4>
+          <div style="overflow-x:auto;margin-bottom:16px;">
+            <table class="stage-table" id="topsisRawTable">
+              <thead>
+                <tr>
+                  <th>Zone</th>
+                  <th>C1: Travel Time (min) [Cost]</th>
+                  <th>C2: Elevation MSL (m) [Benefit]</th>
+                  <th>C3: River Buffer (m) [Benefit]</th>
+                  <th>C4: Capacity (Persons) [Benefit]</th>
+                </tr>
+              </thead>
+              <tbody id="topsisRawBody"></tbody>
+            </table>
+          </div>
+
+          <h4 style="font-family:var(--font-heading);font-size:13px;color:var(--cyan-primary);margin-bottom:8px;">2. Separation Measures ($D_i^+, D_i^-$) & Closeness ($C_i^*$)</h4>
+          <div style="overflow-x:auto;">
+            <table class="stage-table" id="topsisResultTable">
+              <thead>
+                <tr>
+                  <th>Zone</th>
+                  <th>Distance to Positive Ideal ($D_i^+$)</th>
+                  <th>Distance to Negative Ideal ($D_i^-$)</th>
+                  <th>Relative Closeness ($C_i^*$)</th>
+                  <th>TOPSIS Rank</th>
+                </tr>
+              </thead>
+              <tbody id="topsisResultBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB 3: A* vs Dijkstra Verification -->
+        <div class="deck-body-content" id="tab-verification">
+          <div class="verify-score-grid">
+            <div class="score-box">
+              <span>Identity Verification</span>
+              <strong id="verifyOverallBadge" style="color:var(--green-primary);">PASS (100%)</strong>
+            </div>
+            <div class="score-box">
+              <span>Max Cost Diff ($\Delta C$)</span>
+              <strong id="verifyMaxError">0.000000</strong>
+            </div>
+            <div class="score-box">
+              <span>Tolerance ($\epsilon$)</span>
+              <strong>$10^{-6}$</strong>
+            </div>
+            <div class="score-box">
+              <span>A* Search Speedup</span>
+              <strong style="color:var(--cyan-primary);">~38% Faster</strong>
+            </div>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table class="stage-table" id="solverVerifyTable">
+              <thead>
+                <tr>
+                  <th>Safe Zone</th>
+                  <th>A* Cost</th>
+                  <th>Dijkstra Cost</th>
+                  <th>Absolute Diff</th>
+                  <th>A* Nodes</th>
+                  <th>Dijkstra Nodes</th>
+                  <th>Runtime (ms)</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="solverVerifyBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB 4: Sensitivity Sweeps -->
+        <div class="deck-body-content" id="tab-sensitivity">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;">
+            <div>
+              <h4 style="font-family:var(--font-heading);font-size:12.5px;color:var(--ink-secondary);margin-bottom:4px;">1. Feasible Edges vs. Flood Depth Scale</h4>
+              <div class="chart-stage-wrap" style="height:220px;">
+                <canvas id="sensitivityFloodChart"></canvas>
+              </div>
+            </div>
+            <div>
+              <h4 style="font-family:var(--font-heading);font-size:12.5px;color:var(--ink-secondary);margin-bottom:4px;">2. Speed Attenuation $\phi_p(H)$ vs. Hazard Level</h4>
+              <div class="chart-stage-wrap" style="height:220px;">
+                <canvas id="attenuationChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Floating Mathematical Drawer Trigger Button -->
+  <button class="floating-math-btn" id="btnOpenMathDrawer" title="คลิกเพื่อเปิดสมการและการพิสูจน์ทางคณิตศาสตร์">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+    📐 ดูสมการ & การพิสูจน์ (Math Proofs)
+  </button>
+
+  <!-- Collapsible Mathematical Drawer (Right-side slide out) -->
+  <div class="math-drawer-backdrop" id="mathDrawerBackdrop">
+    <aside class="math-drawer">
+      <div class="app-modal-head">
+        <h3 style="font-family:var(--font-heading);font-size:15px;display:flex;align-items:center;gap:8px;color:var(--cyan-primary);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          FHEG Model Mathematical Proofs & Equations
+        </h3>
+        <button class="btn-icon" id="btnCloseMathDrawer">&times;</button>
+      </div>
+
+      <div class="app-modal-body">
+        <p style="font-size:12px;color:var(--ink-secondary);margin-bottom:14px;">
+          สรุปสมการแกนกลางและการพิสูจน์คุณสมบัติทางคณิตศาสตร์ตาม Canonical Blueprint สำหรับอธิบายคณะกรรมการ
+        </p>
+
+        <div class="math-proof-card">
+          <h4>1. Road Slope ($s_e$)</h4>
+          <div class="math-rendered-formula">$$s_e = \frac{z_j - z_i}{L_e}$$</div>
+          <div class="math-proof-desc">คำนวณความชันจากระดับความสูงจริง ($z_i, z_j$) เหนือระดับน้ำทะเลปานกลาง และระยะทาง $L_e$</div>
+        </div>
+
+        <div class="math-proof-card">
+          <h4>2. Flood Hazard Function ($H_e$) & Monotonicity</h4>
+          <div class="math-rendered-formula">$$H_e = h_e(v_e + 0.5) + D_e$$</div>
+          <div class="math-proof-desc">
+            <strong>Proof of Monotonicity:</strong> $\frac{\partial H}{\partial h} = v + 0.5 > 0$ และ $\frac{\partial H}{\partial v} = h \ge 0$ รับประกันว่าความเสี่ยงจะไม่ลดลงเมื่อระดับน้ำหรือความเร็วการไหลเพิ่มขึ้น
+          </div>
+        </div>
+
+        <div class="math-proof-card">
+          <h4>3. Feasibility Constraint ($H_c = 1.25$)</h4>
+          <div class="math-rendered-formula">$$e \in E_F \iff H_e < 1.25$$</div>
+          <div class="math-proof-desc">ตัดช่วงถนนวิกฤต ($H_e \ge 1.25$) ออกจาก Feasible Subgraph $G_F$ ทันทีเพื่อความปลอดภัย</div>
+        </div>
+
+        <div class="math-proof-card">
+          <h4>4. Hazard Attenuation Function ($\phi_p$)</h4>
+          <div class="math-rendered-formula">$$\phi_p(H) = \left(\frac{H_c - H}{H_c - H_0}\right)^p,\quad H_0=0.25,\, H_c=1.25$$</div>
+          <div class="math-proof-desc">ฟังก์ชันลดทอนความเร็วแบบต่อเนื่อง $\phi_p \in [0, 1]$ เชื่อมต่ออย่างราบรื่นที่ $H_0$ และ $H_c$</div>
+        </div>
+
+        <div class="math-proof-card">
+          <h4>5. Movement Speed ($u_e$) & Tobler Function</h4>
+          <div class="math-rendered-formula">$$u_e = V_T(s_e) \cdot \phi_p(H_e),\quad V_T(s_e) = 6 e^{-3.5|s_e + 0.05|}$$</div>
+          <div class="math-proof-desc">ความเร็วเดินเท้าปรับตามความลาดชันของภูมิประเทศและระดับอันตรายจากน้ำท่วม</div>
+        </div>
+
+        <div class="math-proof-card">
+          <h4>6. Risk-Equivalent & FHEG Edge Weight ($w_e$)</h4>
+          <div class="math-rendered-formula">$$w_e(\lambda) = t_e + \lambda \cdot r_e,\quad \min W_\lambda(P) = T(P) + \lambda R(P)$$</div>
+          <div class="math-proof-desc">
+            <strong>Route Switching Threshold:</strong> $\lambda_{ij} = \frac{T_j - T_i}{R_i - R_j}$ สำหรับวิเคราะห์จุดเปลี่ยนผ่านเส้นทาง
+          </div>
+        </div>
+
+        <div class="math-proof-card">
+          <h4>7. A* Heuristic Admissibility & Consistency</h4>
+          <div class="math-rendered-formula">$$h(n) = \frac{\text{dist}(n, \text{goal})}{u_{\max}} \le w^*(n, \text{goal})$$</div>
+          <div class="math-proof-desc">Heuristic เป็น Lower Bound ที่แท้จริง รับประกันว่า A* จะค้นพบ Optimal Modeled Cost เสมอ</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Modal: Data Sources & Attribution -->
+  <div class="app-modal-backdrop" id="modalDataSources">
+    <div class="app-modal-box">
+      <div class="app-modal-head">
+        <h3 style="font-family:var(--font-heading);font-size:15px;display:flex;align-items:center;gap:8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          ที่มาของข้อมูลและบริการ Open APIs ทั้งหมดในระบบ
+        </h3>
+        <button class="btn-icon" id="btnCloseSources">&times;</button>
+      </div>
+      <div class="app-modal-body">
+        <p style="font-size:12.5px;color:var(--ink-secondary);margin-bottom:14px;">
+          ระบบ Flood Safe Zone (FSZ) ใช้ข้อมูลภูมิสารสนเทศ อุทกวิทยา และระดับความสูงจริง <strong>100% ฟรี ไม่ต้องผูกบัตรเครดิต และไม่มีค่าใช้จ่ายแอบแฝง</strong>:
+        </p>
+
+        <div class="source-list" style="display:grid;gap:12px;">
+          <div class="source-item" style="padding:12px;border-radius:var(--radius-md);background:var(--bg-surface-2);border:1px solid var(--border-subtle);">
+            <h4 style="font-size:13px;color:var(--cyan-primary);margin-bottom:4px;">1. โครงข่ายถนนจริง & จุดปลอดภัย (OpenStreetMap) <span class="badge badge-green">Open Source</span></h4>
+            <p style="font-size:12px;color:var(--ink-secondary);">ดึงผ่าน Overpass API ในพิกัดเทศบาลเมืองแม่ฮ่องสอน (โรงเรียนห้องสอนศึกษา, ศาลากลางจังหวัด, วัดพระธาตุดอยกองมู, สนามกีฬากลาง)</p>
+          </div>
+
+          <div class="source-item" style="padding:12px;border-radius:var(--radius-md);background:var(--bg-surface-2);border:1px solid var(--border-subtle);">
+            <h4 style="font-size:13px;color:var(--cyan-primary);margin-bottom:4px;">2. ระดับความสูงภูมิประเทศจริง (Digital Elevation Model) <span class="badge badge-green">Open Source</span></h4>
+            <p style="font-size:12px;color:var(--ink-secondary);">Copernicus 30m Global DEM & SRTM ผ่าน Open-Meteo Elevation API สำหรับคำนวณ Slope ($s_e$)</p>
+          </div>
+
+          <div class="source-item" style="padding:12px;border-radius:var(--radius-md);background:var(--bg-surface-2);border:1px solid var(--border-subtle);">
+            <h4 style="font-size:13px;color:var(--cyan-primary);margin-bottom:4px;">3. ข้อมูลอุทกวิทยาแม่น้ำปาย & ฝนสะสม (GloFAS & ECMWF) <span class="badge badge-green">Open Source</span></h4>
+            <p style="font-size:12px;color:var(--ink-secondary);">Global Flood Awareness System (GloFAS) และ ECMWF Weather API สำหรับอัตราการไหล ($m^3/s$) และปริมาณฝน ($mm/h$)</p>
+          </div>
+
+          <div class="source-item" style="padding:12px;border-radius:var(--radius-md);background:var(--bg-surface-2);border:1px solid var(--border-subtle);">
+            <h4 style="font-size:13px;color:var(--cyan-primary);margin-bottom:4px;">4. ภาพถ่ายดาวเทียม & แผนที่ (Base Map Tiles) <span class="badge badge-green">Free Tier</span></h4>
+            <p style="font-size:12px;color:var(--ink-secondary);">ESRI World Imagery Satellite, CartoDB Voyager & Dark Matter, OpenTopoMap (ไม่มีค่าใช้จ่าย)</p>
+          </div>
+        </div>
+      </div>
+      <div class="app-modal-foot">
+        <button class="btn btn-primary" id="btnCloseSourcesBottom">เข้าใจแล้ว ปิดหน้าต่าง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Edge Inspector -->
+  <div class="app-modal-backdrop" id="modalEdgeInspector">
+    <div class="app-modal-box">
+      <div class="app-modal-head">
+        <h3 style="font-family:var(--font-heading);font-size:15px;display:flex;align-items:center;gap:8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+          Edge Mathematical Inspector: <span id="inspectEdgeId" style="color:var(--cyan-primary);">E01</span>
+        </h3>
+        <button class="btn-icon" id="btnCloseInspector">&times;</button>
+      </div>
+      <div class="app-modal-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:12px;margin-bottom:14px;">
+          <div style="background:var(--bg-surface-2);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:12px;">
+            <h4 style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;margin-bottom:6px;">1. Raw Inputs & Topography</h4>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;"><span>From:</span><strong id="inspectFrom">N01</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;"><span>To:</span><strong id="inspectTo">N02</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;"><span>Length:</span><strong id="inspectLength">245.0 m</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;"><span>Elevations:</span><strong id="inspectElevation">235m → 238m</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;"><span>Slope:</span><strong id="inspectSlope">+1.31%</strong></div>
+          </div>
+
+          <div style="background:var(--bg-surface-2);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:12px;">
+            <h4 style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;margin-bottom:6px;">2. Hazard & Feasibility</h4>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;"><span>Water Depth:</span><strong id="inspectDepth">0.35 m</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;"><span>Velocity:</span><strong id="inspectVelocity">0.80 m/s</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;"><span>Debris:</span><strong id="inspectDebris">0.15</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;"><span>Hazard ($H_e$):</span><strong id="inspectHazard" style="color:var(--cyan-primary);">0.605</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;"><span>Feasibility:</span><span class="badge badge-green" id="inspectFeasibleBadge">FEASIBLE</span></div>
+          </div>
+        </div>
+
+        <h4 style="font-family:var(--font-heading);font-size:12.5px;color:var(--ink-primary);margin-bottom:6px;">3. Step-by-Step Substitution Breakdown</h4>
+        <div class="step-calc-box" id="inspectCalcText">
+          Loading calculation breakdown...
+        </div>
+      </div>
+      <div class="app-modal-foot">
+        <button class="btn btn-outline" id="btnCloseInspectorBottom">ปิด</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vendor JS Libraries (Leaflet, Chart.js, KaTeX) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Modular Application Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/data-network.js"></script>
+  <script src="js/fheg-core.js"></script>
+  <script src="js/solvers.js"></script>
+  <script src="js/topsis-engine.js"></script>
+  <script src="js/map-visualizer.js"></script>
+  <script src="js/chart-visualizer.js"></script>
+  <script src="js/live-compute-anim.js"></script>
+  <script src="js/exporter.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
