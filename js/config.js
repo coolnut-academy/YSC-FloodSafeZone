@@ -1,5 +1,5 @@
 /* ==========================================================================
-   CONFIG & 3D GEOSPATIAL MAP DEFINITIONS
+   CONFIG & 3D GEOSPATIAL MAP DEFINITIONS (SATELLITE & 3D TERRAIN MESH)
    ========================================================================== */
 
 const CONFIG = {
@@ -15,25 +15,25 @@ const CONFIG = {
     name: "เทศบาลเมืองแม่ฮ่องสอน, ประเทศไทย",
     lat: 19.3015,
     lon: 97.9640,
-    zoom: 14.8,
-    pitch: 55, // 3D Isometric View
-    bearing: -22 // 3D Rotation Angle
+    zoom: 14.6,
+    pitch: 62, // 3D Mountain Perspective
+    bearing: -28 // 3D Camera Rotation towards Doi Kong Mu & Pai River Valley
   },
 
-  // 100% Free Tile Layer Styles for MapLibre GL
+  // 100% Free Satellite & Vector Tile Layer Styles
   tileLayers: {
+    "satellite": {
+      name: "ESRI World Imagery (3D Satellite)",
+      tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
+      maxzoom: 19,
+      attribution: "© ESRI World Imagery, Maxar, Earthstar Geographics"
+    },
     "voyager": {
-      name: "CartoDB Voyager (Light)",
+      name: "CartoDB Voyager (Light Vector)",
       tiles: ["https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
               "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png"],
       maxzoom: 19,
       attribution: "© CARTO, © OpenStreetMap"
-    },
-    "satellite": {
-      name: "ESRI World Satellite",
-      tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
-      maxzoom: 19,
-      attribution: "© ESRI, Maxar, Earthstar Geographics"
     },
     "osm": {
       name: "OpenStreetMap Standard",
@@ -47,6 +47,15 @@ const CONFIG = {
       maxzoom: 17,
       attribution: "© OpenTopoMap, © OpenStreetMap"
     }
+  },
+
+  // 100% Free Global 3D Terrain DEM Tiles (AWS Open Data Terrarium Mesh)
+  terrain: {
+    tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
+    encoding: "terrarium",
+    tileSize: 256,
+    maxzoom: 15,
+    exaggeration: 1.6 // Dramatic 3D mountain relief for Mae Hong Son valley
   },
 
   // Open APIs (100% Free Public Endpoints)

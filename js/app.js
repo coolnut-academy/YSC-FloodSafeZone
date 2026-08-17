@@ -448,11 +448,30 @@ const App = {
       this.classList.toggle("active", active);
     });
 
-    // 2D / 3D Toggle
-    document.getElementById("btnToggle3D").addEventListener("click", function() {
-      const is3D = MapVisualizer.toggle3DView();
-      this.textContent = is3D ? "3D View (55°)" : "2D Top-Down";
+    // 3D Camera Presets & Layer Switcher
+    const camButtons = document.querySelectorAll(".cam-preset-btn");
+    camButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        camButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        MapVisualizer.set3DCameraMode(btn.dataset.cam);
+      });
     });
+
+    const layerSelect = document.getElementById("mapLayerSelect");
+    if (layerSelect) {
+      layerSelect.addEventListener("change", e => {
+        MapVisualizer.switchTileLayer(e.target.value);
+      });
+    }
+
+    const terrainSlider = document.getElementById("paramTerrainExaggeration");
+    if (terrainSlider) {
+      terrainSlider.addEventListener("input", e => {
+        document.getElementById("valTerrainExaggeration").textContent = `${parseFloat(e.target.value).toFixed(1)}x`;
+        MapVisualizer.setTerrainExaggeration(e.target.value);
+      });
+    }
 
     document.getElementById("btnResetMap").addEventListener("click", () => {
       MapVisualizer.resetCenter();
