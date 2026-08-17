@@ -1,167 +1,429 @@
 /* ==========================================================================
-   MAP VISUALIZER (LEAFLET GIS ENGINE WITH GLOWING ROUTE RENDERERS)
+   3D MAP ENGINE (MAPLIBRE GL JS WITH 3D PERSPECTIVE & RED/YELLOW/GREEN ZONES)
    ========================================================================== */
 
 const MapVisualizer = {
   map: null,
-  layers: {
-    baseTiles: null,
-    edgesLayer: null,
-    nodesLayer: null,
-    sheltersLayer: null,
-    optimalPathLayer: null,
-    simulationLayer: null
+  markers: [],
+  is3D: true,
+  zoneVisibility: {
+    red: true,
+    yellow: true,
+    green: true
   },
 
   init(containerId, onEdgeClick, onShelterClick) {
-    this.map = L.map(containerId, {
-      center: [CONFIG.studyArea.lat, CONFIG.studyArea.lon],
-      zoom: CONFIG.studyArea.defaultZoom,
-      zoomControl: true
-    });
-
-    this.layers.edgesLayer = L.layerGroup().addTo(this.map);
-    this.layers.nodesLayer = L.layerGroup().addTo(this.map);
-    this.layers.sheltersLayer = L.layerGroup().addTo(this.map);
-    this.layers.optimalPathLayer = L.polyline([], {
-      color: "#00d2ff",
-      weight: 7,
-      opacity: 0.95,
-      className: "neon-path"
-    }).addTo(this.map);
-    this.layers.simulationLayer = L.layerGroup().addTo(this.map);
-
-    this.switchTileLayer("carto-dark");
     this.onEdgeClick = onEdgeClick;
     this.onShelterClick = onShelterClick;
+
+    // Create MapLibre GL Map Instance in 3D Isometric View
+    const defaultLayer = CONFIG.tileLayers["voyager"];
+
+    const styleSpec = {
+      version: 8,
+      sources: {
+        "base-raster-tiles": {
+          type: "raster",
+          tiles: defaultLayer.tiles,
+          tileSize: 256,
+          attribution: defaultLayer.attribution
+        }
+      },
+      layers: [
+        {
+          id: "base-tiles-layer",
+          type: "raster",
+          source: "base-raster-tiles",
+          minzoom: 0,
+          maxzoom: 19
+        }
+      ]
+    };
+
+    this.map = new maplibregl.Map({
+      container: containerId,
+      style: styleSpec,
+      center: [CONFIG.studyArea.lon, CONFIG.studyArea.lat],
+      zoom: CONFIG.studyArea.zoom,
+      pitch: CONFIG.studyArea.pitch,
+      bearing: CONFIG.studyArea.bearing,
+      antialias: true
+    });
+
+    this.map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "bottom-right");
+
+    this.map.on("load", () => {
+      this.setupLayers();
+      if (this.pendingRender) {
+        this.pendingRender();
+        this.pendingRender = null;
+      }
+    });
+  },
+
+  setupLayers() {
+    if (!this.map) return;
+
+    // 1. Add Flood Inundation Zones GeoJSON Source
+    if (!this.map.getSource("flood-zones-source")) {
+      this.map.addSource("flood-zones-source", {
+        type: "geojson",
+        data: FLOOD_ZONES_GEOJSON
+      });
+
+      // Red Zone Layer (Critical Inundation)
+      this.map.addLayer({
+        id: "zone-red-fill",
+        type: "fill",
+        source: "flood-zones-source",
+        filter: ["==", "zoneType", "red"],
+        paint: {
+          "fill-color": "#ef4444",
+          "fill-opacity": 0.28
+        }
+      });
+      this.map.addLayer({
+        id: "zone-red-line",
+        type: "line",
+        source: "flood-zones-source",
+        filter: ["==", "zoneType", "red"],
+        paint: {
+          "line-color": "#ef4444",
+          "line-width": 2.5,
+          "line-dasharray": [3, 2]
+        }
+      });
+
+      // Yellow Zone Layer (Moderate Flood Caution)
+      this.map.addLayer({
+        id: "zone-yellow-fill",
+        type: "fill",
+        source: "flood-zones-source",
+        filter: ["==", "zoneType", "yellow"],
+        paint: {
+          "fill-color": "#f59e0b",
+          "fill-opacity": 0.22
+        }
+      });
+      this.map.addLayer({
+        id: "zone-yellow-line",
+        type: "line",
+        source: "flood-zones-source",
+        filter: ["==", "zoneType", "yellow"],
+        paint: {
+          "line-color": "#f59e0b",
+          "line-width": 2
+        }
+      });
+
+      // Green Zone Layer (Highland Safe Elevation Plateaus)
+      this.map.addLayer({
+        id: "zone-green-fill",
+        type: "fill",
+        source: "flood-zones-source",
+        filter: ["==", "zoneType", "green"],
+        paint: {
+          "fill-color": "#10b981",
+          "fill-opacity": 0.22
+        }
+      });
+      this.map.addLayer({
+        id: "zone-green-line",
+        type: "line",
+        source: "flood-zones-source",
+        filter: ["==", "zoneType", "green"],
+        paint: {
+          "line-color": "#10b981",
+          "line-width": 2
+        }
+      });
+
+      // Add popup on zone click
+      const zonePopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+      ["zone-red-fill", "zone-yellow-fill", "zone-green-fill"].forEach(layerId => {
+        this.map.on("mousemove", layerId, e => {
+          this.map.getCanvas().style.cursor = "pointer";
+          const props = e.features[0].properties;
+          zonePopup.setLngLat(e.lngLat)
+            .setHTML(`
+              <div style="font-family:sans-serif;font-size:12px;padding:4px;">
+                <strong style="color:${layerId.includes('red') ? '#ef4444' : (layerId.includes('yellow') ? '#d97706' : '#10b981')}">${props.name}</strong><br>
+                ระดับอันตราย: <strong>${props.hazardLevel}</strong><br>
+                ความลึกน้ำ: <strong>${props.waterDepth}</strong><br>
+                <span style="color:#64748b;font-size:11px;">${props.description}</span>
+              </div>
+            `).addTo(this.map);
+        });
+
+        this.map.on("mouseleave", layerId, () => {
+          this.map.getCanvas().style.cursor = "";
+          zonePopup.remove();
+        });
+      });
+    }
+
+    // 2. Add Road Network Edges Source
+    if (!this.map.getSource("road-edges-source")) {
+      this.map.addSource("road-edges-source", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] }
+      });
+
+      this.map.addLayer({
+        id: "road-edges-layer",
+        type: "line",
+        source: "road-edges-source",
+        paint: {
+          "line-color": ["get", "color"],
+          "line-width": ["get", "width"],
+          "line-opacity": 0.85
+        }
+      });
+
+      // Click listener on road edges
+      this.map.on("click", "road-edges-layer", e => {
+        if (e.features && e.features[0] && this.onEdgeClick) {
+          const edgeId = e.features[0].properties.id;
+          const foundEdge = this.lastComputedEdges?.find(item => item.id === edgeId);
+          if (foundEdge) this.onEdgeClick(foundEdge);
+        }
+      });
+
+      this.map.on("mouseenter", "road-edges-layer", () => this.map.getCanvas().style.cursor = "pointer");
+      this.map.on("mouseleave", "road-edges-layer", () => this.map.getCanvas().style.cursor = "");
+    }
+
+    // 3. Add Optimal Evacuation Path Source & Layer (Glowing Neon Cyan 3D Line)
+    if (!this.map.getSource("optimal-path-source")) {
+      this.map.addSource("optimal-path-source", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] }
+      });
+
+      // Glow casing line
+      this.map.addLayer({
+        id: "optimal-path-casing",
+        type: "line",
+        source: "optimal-path-source",
+        paint: {
+          "line-color": "#00d2ff",
+          "line-width": 10,
+          "line-opacity": 0.4,
+          "line-blur": 3
+        }
+      });
+
+      // Core crisp line
+      this.map.addLayer({
+        id: "optimal-path-core",
+        type: "line",
+        source: "optimal-path-source",
+        paint: {
+          "line-color": "#0284c7",
+          "line-width": 4.5,
+          "line-opacity": 1.0
+        }
+      });
+    }
+
+    // 4. Add Solver Node Exploration Animation Layer
+    if (!this.map.getSource("solver-sim-source")) {
+      this.map.addSource("solver-sim-source", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] }
+      });
+
+      this.map.addLayer({
+        id: "solver-sim-layer",
+        type: "circle",
+        source: "solver-sim-source",
+        paint: {
+          "circle-radius": 9,
+          "circle-color": "#00d2ff",
+          "circle-stroke-width": 2.5,
+          "circle-stroke-color": "#ffffff",
+          "circle-opacity": 0.9
+        }
+      });
+    }
   },
 
   switchTileLayer(type) {
-    if (this.layers.baseTiles) {
-      this.map.removeLayer(this.layers.baseTiles);
-    }
+    if (!this.map) return;
+    const tileInfo = CONFIG.tileLayers[type] || CONFIG.tileLayers["voyager"];
 
-    const tileInfo = CONFIG.tileLayers[type] || CONFIG.tileLayers["carto-dark"];
-    this.layers.baseTiles = L.tileLayer(tileInfo.url, {
-      maxZoom: tileInfo.maxZoom,
-      attribution: tileInfo.attribution
-    }).addTo(this.map);
+    const currentStyle = this.map.getStyle();
+    if (currentStyle && currentStyle.sources["base-raster-tiles"]) {
+      // Update tile source URL
+      this.map.removeLayer("base-tiles-layer");
+      this.map.removeSource("base-raster-tiles");
+
+      this.map.addSource("base-raster-tiles", {
+        type: "raster",
+        tiles: tileInfo.tiles,
+        tileSize: 256,
+        attribution: tileInfo.attribution
+      });
+
+      this.map.addLayer({
+        id: "base-tiles-layer",
+        type: "raster",
+        source: "base-raster-tiles",
+        minzoom: 0,
+        maxzoom: 19
+      }, "zone-red-fill"); // Insert underneath flood zones
+    }
+  },
+
+  toggleZone(zoneType) {
+    this.zoneVisibility[zoneType] = !this.zoneVisibility[zoneType];
+    const visible = this.zoneVisibility[zoneType] ? "visible" : "none";
+
+    if (this.map.getLayer(`zone-${zoneType}-fill`)) {
+      this.map.setLayoutProperty(`zone-${zoneType}-fill`, "visibility", visible);
+      this.map.setLayoutProperty(`zone-${zoneType}-line`, "visibility", visible);
+    }
+    return this.zoneVisibility[zoneType];
+  },
+
+  toggle3DView() {
+    if (!this.map) return;
+    this.is3D = !this.is3D;
+
+    this.map.easeTo({
+      pitch: this.is3D ? 55 : 0,
+      bearing: this.is3D ? -22 : 0,
+      duration: 1000
+    });
+
+    return this.is3D;
   },
 
   resetCenter() {
-    if (this.map) {
-      this.map.setView([CONFIG.studyArea.lat, CONFIG.studyArea.lon], CONFIG.studyArea.defaultZoom);
-    }
+    if (!this.map) return;
+    this.map.flyTo({
+      center: [CONFIG.studyArea.lon, CONFIG.studyArea.lat],
+      zoom: CONFIG.studyArea.zoom,
+      pitch: this.is3D ? 55 : 0,
+      bearing: this.is3D ? -22 : 0,
+      duration: 1200
+    });
   },
 
   renderNetwork(nodes, computedEdges, topsisData, selectedZoneId, routeResults) {
-    if (!this.map) return;
+    this.lastComputedEdges = computedEdges;
 
-    this.layers.edgesLayer.clearLayers();
-    this.layers.nodesLayer.clearLayers();
-    this.layers.sheltersLayer.clearLayers();
+    if (!this.map || !this.map.isStyleLoaded()) {
+      this.pendingRender = () => this.renderNetwork(nodes, computedEdges, topsisData, selectedZoneId, routeResults);
+      return;
+    }
 
-    // 1. Draw Edges with Hazard-Aware Colors & Dash
-    computedEdges.forEach(e => {
+    // 1. Update Road Edges GeoJSON
+    const edgeFeatures = computedEdges.map(e => {
       const u = nodes[e.from];
       const v = nodes[e.to];
-      const coords = [[u.lat, u.lon], [v.lat, v.lon]];
-
-      let color = "#10b981"; // Feasible Low Hazard
-      let dashArray = null;
-      let weight = 3.5;
-      let opacity = 0.75;
+      let color = "#10b981"; // Safe Feasible
+      let width = 3.5;
 
       if (!e.feasible) {
-        color = "#ef4444"; // Removed Infeasible Cutoff
-        dashArray = "6, 6";
-        weight = 4.5;
-        opacity = 0.9;
+        color = "#ef4444"; // Cutoff removed
+        width = 4.0;
       } else if (e.He >= 0.6) {
-        color = "#f59e0b"; // Moderate Hazard
-        weight = 4.0;
+        color = "#f59e0b"; // Moderate Caution
+        width = 3.5;
       }
 
-      const poly = L.polyline(coords, { color, dashArray, weight, opacity });
-      poly.bindTooltip(`
-        <div style="font-family:sans-serif;font-size:12px;">
-          <strong>Edge ${e.id}</strong> (${e.from} &rarr; ${e.to})<br>
-          Hazard H = <strong>${e.He.toFixed(3)}</strong><br>
-          Speed = ${e.effectiveSpeed.toFixed(1)} m/min (${(e.effectiveSpeed * 0.06).toFixed(2)} km/h)<br>
-          Status: <span style="color:${e.feasible ? '#10b981' : '#ef4444'};font-weight:700;">${e.feasible ? 'FEASIBLE' : 'BLOCKED (H ≥ 1.25)'}</span>
-        </div>
-      `, { sticky: true });
-
-      poly.on("click", () => {
-        if (this.onEdgeClick) this.onEdgeClick(e);
-      });
-
-      this.layers.edgesLayer.addLayer(poly);
+      return {
+        type: "Feature",
+        properties: { id: e.id, color, width },
+        geometry: {
+          type: "LineString",
+          coordinates: [[u.lon, u.lat], [v.lon, v.lat]]
+        }
+      };
     });
 
-    // 2. Draw Junction Nodes, Start Point, and Candidate Shelters
+    const edgeSource = this.map.getSource("road-edges-source");
+    if (edgeSource) {
+      edgeSource.setData({ type: "FeatureCollection", features: edgeFeatures });
+    }
+
+    // 2. Update Optimal Path GeoJSON
+    const pathSource = this.map.getSource("optimal-path-source");
+    if (pathSource) {
+      if (selectedZoneId && routeResults[selectedZoneId]?.feasible) {
+        const path = routeResults[selectedZoneId].path;
+        const coords = path.map(id => [nodes[id].lon, nodes[id].lat]);
+        pathSource.setData({
+          type: "FeatureCollection",
+          features: [{
+            type: "Feature",
+            geometry: { type: "LineString", coordinates: coords }
+          }]
+        });
+      } else {
+        pathSource.setData({ type: "FeatureCollection", features: [] });
+      }
+    }
+
+    // 3. Update 3D HTML Markers for Start Point and Candidate Safe Zones
+    this.markers.forEach(m => m.remove());
+    this.markers = [];
+
     Object.values(nodes).forEach(n => {
       if (n.type === "shelter") {
         const topsisItem = topsisData?.results?.find(r => r.zoneId === n.id);
-        const rankText = topsisItem ? `Rank #${topsisItem.rank} (${topsisItem.closeness.toFixed(3)})` : "";
+        const rankText = topsisItem ? `Rank #${topsisItem.rank}` : "";
         const isSelected = selectedZoneId === n.id;
 
-        const marker = L.circleMarker([n.lat, n.lon], {
-          radius: isSelected ? 14 : 11,
-          fillColor: "#10b981",
-          color: isSelected ? "#00d2ff" : "#ffffff",
-          weight: isSelected ? 4 : 2.5,
-          fillOpacity: 0.95,
-          className: "pulse-marker-shelter"
-        });
+        const el = document.createElement("div");
+        el.className = "marker-3d-shelter";
+        el.innerHTML = `<span>${n.id}</span>`;
+        if (isSelected) {
+          el.style.transform = "scale(1.2)";
+          el.style.borderColor = "#0284c7";
+          el.style.boxShadow = "0 0 16px #0284c7";
+        }
 
-        marker.bindTooltip(`
-          <div style="font-family:sans-serif;font-size:12px;">
+        const popup = new maplibregl.Popup({ offset: 25 }).setHTML(`
+          <div style="font-family:sans-serif;font-size:12px;padding:2px;">
             <strong style="color:#10b981;font-size:13px;">${n.name}</strong><br>
             Elevation: <strong>${n.z}m MSL</strong><br>
-            River Buffer: <strong>${n.riverDist}m</strong><br>
-            Capacity: <strong>${n.capacity} ppl</strong><br>
-            <span style="color:#00d2ff;font-weight:700;">${rankText}</span>
+            River Distance: <strong>${n.riverDist}m</strong><br>
+            Capacity: <strong>${n.capacity.toLocaleString()} คน</strong><br>
+            <span style="color:#0284c7;font-weight:800;">${rankText} (Score: ${topsisItem ? topsisItem.closeness.toFixed(4) : '—'})</span>
           </div>
-        `, { permanent: false });
+        `);
 
-        marker.on("click", () => {
+        el.addEventListener("click", () => {
           if (this.onShelterClick) this.onShelterClick(n.id);
         });
 
-        this.layers.sheltersLayer.addLayer(marker);
-      } else if (n.type === "start") {
-        const marker = L.circleMarker([n.lat, n.lon], {
-          radius: 11,
-          fillColor: "#f59e0b",
-          color: "#ffffff",
-          weight: 3,
-          fillOpacity: 0.95,
-          className: "pulse-marker-start"
-        });
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([n.lon, n.lat])
+          .setPopup(popup)
+          .addTo(this.map);
 
-        marker.bindTooltip(`<strong>${n.name}</strong><br>จุดเริ่มต้นจำลองการอพยพ`, { permanent: false });
-        this.layers.nodesLayer.addLayer(marker);
-      } else {
-        const marker = L.circleMarker([n.lat, n.lon], {
-          radius: 5,
-          fillColor: "#64748b",
-          color: "#ffffff",
-          weight: 1.5,
-          fillOpacity: 0.85
-        });
-        marker.bindTooltip(`<strong>Node ${n.id}</strong><br>${n.name}<br>Elev: ${n.z}m`, { sticky: true });
-        this.layers.nodesLayer.addLayer(marker);
+        this.markers.push(marker);
+      } else if (n.type === "start") {
+        const el = document.createElement("div");
+        el.className = "marker-3d-start";
+        el.innerHTML = `<span>S</span>`;
+
+        const popup = new maplibregl.Popup({ offset: 25 }).setHTML(`
+          <div style="font-family:sans-serif;font-size:12px;">
+            <strong style="color:#f59e0b;">จุดเริ่มต้นจำลอง (Start S)</strong><br>
+            Elevation: ${n.z}m MSL
+          </div>
+        `);
+
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([n.lon, n.lat])
+          .setPopup(popup)
+          .addTo(this.map);
+
+        this.markers.push(marker);
       }
     });
-
-    // 3. Highlight Optimal Path
-    if (selectedZoneId && routeResults[selectedZoneId]?.feasible) {
-      const path = routeResults[selectedZoneId].path;
-      const polyCoords = path.map(id => [nodes[id].lat, nodes[id].lon]);
-      this.layers.optimalPathLayer.setLatLngs(polyCoords);
-    } else {
-      this.layers.optimalPathLayer.setLatLngs([]);
-    }
   }
 };

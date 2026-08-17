@@ -1,58 +1,63 @@
 /* ==========================================================================
-   DESIGN TOKENS & THEMING (CSS VARIABLES)
+   DESIGN TOKENS & THEMING (PURE LIGHT SCIENTIFIC LAB CONSOLE)
    ========================================================================== */
 
 :root {
-  /* Color Palette - Cyber Cyan & Deep Navy Premium Theme */
-  --bg-app: #060b13;
-  --bg-surface: #0c1421;
-  --bg-surface-glass: rgba(12, 20, 33, 0.82);
-  --bg-surface-2: #121e31;
-  --bg-surface-3: #182840;
+  /* Surface & Background Colors (Clean Light Laboratory Style) */
+  --bg-app: #f4f7fb;
+  --bg-surface: #ffffff;
+  --bg-surface-glass: rgba(255, 255, 255, 0.94);
+  --bg-surface-2: #f8fafc;
+  --bg-surface-3: #edf2f7;
+  --bg-surface-hover: #f1f5f9;
   
-  --ink-primary: #f0f6fc;
-  --ink-secondary: #c9d8e8;
-  --ink-muted: #7991ab;
+  /* High-Contrast Crisp Typography */
+  --ink-primary: #0a192f;
+  --ink-secondary: #334e68;
+  --ink-muted: #64748b;
+  --ink-light: #94a3b8;
   
-  --border-subtle: #192a42;
-  --border-medium: #243b5c;
-  --border-accent: #00d2ff;
+  /* Borders & Dividers */
+  --border-subtle: #e2e8f0;
+  --border-medium: #cbd5e1;
+  --border-strong: #94a3b8;
+  --border-accent: #0284c7;
   
-  --cyan-primary: #00d2ff;
-  --cyan-glow: 0 0 16px rgba(0, 210, 255, 0.65);
-  --cyan-soft: rgba(0, 210, 255, 0.12);
+  /* Primary Accent & Hazard Colors */
+  --cyan-primary: #0284c7;
+  --cyan-glow: 0 0 14px rgba(2, 132, 199, 0.35);
+  --cyan-soft: rgba(2, 132, 199, 0.1);
   
   --blue-primary: #2563eb;
-  --blue-glow: 0 0 16px rgba(37, 99, 235, 0.6);
-  --blue-soft: rgba(37, 99, 235, 0.15);
+  --blue-soft: rgba(37, 99, 235, 0.1);
   
   --green-primary: #10b981;
-  --green-glow: 0 0 14px rgba(16, 185, 129, 0.6);
-  --green-soft: rgba(16, 185, 129, 0.15);
+  --green-glow: 0 0 14px rgba(16, 185, 129, 0.35);
+  --green-soft: rgba(16, 185, 129, 0.12);
   
   --amber-primary: #f59e0b;
-  --amber-glow: 0 0 14px rgba(245, 158, 11, 0.6);
-  --amber-soft: rgba(245, 158, 11, 0.15);
+  --amber-glow: 0 0 14px rgba(245, 158, 11, 0.35);
+  --amber-soft: rgba(245, 158, 11, 0.12);
   
   --red-primary: #ef4444;
-  --red-glow: 0 0 14px rgba(239, 68, 68, 0.6);
-  --red-soft: rgba(239, 68, 68, 0.15);
+  --red-glow: 0 0 14px rgba(239, 68, 68, 0.35);
+  --red-soft: rgba(239, 68, 68, 0.12);
   
-  --purple-primary: #a855f7;
-  --purple-soft: rgba(168, 85, 247, 0.15);
+  --purple-primary: #8b5cf6;
+  --purple-soft: rgba(139, 92, 246, 0.12);
 
   /* Shadows & Depth */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 20px 48px -10px rgba(0, 0, 0, 0.7);
-  --shadow-glow-cyan: 0 0 28px rgba(0, 210, 255, 0.25);
+  --shadow-xs: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 8px 24px -4px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 20px 48px -10px rgba(15, 23, 42, 0.12);
 
   /* Border Radii */
   --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
   --radius-full: 9999px;
 
   /* Typography */
@@ -64,28 +69,4 @@
   --trans-fast: 0.15s ease;
   --trans-base: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   --trans-smooth: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-[data-theme="light"] {
-  --bg-app: #f2f6fa;
-  --bg-surface: #ffffff;
-  --bg-surface-glass: rgba(255, 255, 255, 0.88);
-  --bg-surface-2: #f8fafc;
-  --bg-surface-3: #eaf1f7;
-  
-  --ink-primary: #0a192f;
-  --ink-secondary: #2c425a;
-  --ink-muted: #5e7a96;
-  
-  --border-subtle: #dbe4ee;
-  --border-medium: #bcccdc;
-  
-  --cyan-primary: #0284c7;
-  --cyan-glow: 0 0 12px rgba(2, 132, 199, 0.35);
-  --cyan-soft: rgba(2, 132, 199, 0.1);
-  
-  --shadow-sm: 0 2px 6px rgba(10, 25, 47, 0.04);
-  --shadow-md: 0 8px 20px -4px rgba(10, 25, 47, 0.08);
-  --shadow-lg: 0 18px 40px -10px rgba(10, 25, 47, 0.12);
-  --shadow-glow-cyan: 0 0 24px rgba(2, 132, 199, 0.15);
 }

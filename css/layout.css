@@ -1,5 +1,5 @@
 /* ==========================================================================
-   LAYOUT & RESPONSIVE GRID ARCHITECTURE
+   LAYOUT ARCHITECTURE (LAB CONSOLE DASHBOARD)
    ========================================================================== */
 
 * {
@@ -22,15 +22,14 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  transition: background var(--trans-base), color var(--trans-base);
 }
 
 .container {
-  width: min(calc(100% - 32px), 1480px);
+  width: min(calc(100% - 36px), 1520px);
   margin: 0 auto;
 }
 
-/* App Header / Navigation */
+/* App Header Navigation */
 .app-header {
   position: sticky;
   top: 0;
@@ -39,11 +38,11 @@ body {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border-subtle);
-  transition: background var(--trans-base);
+  box-shadow: var(--shadow-xs);
 }
 
 .nav-row {
-  height: 64px;
+  height: 62px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -57,16 +56,16 @@ body {
 }
 
 .brand-badge-logo {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--cyan-primary), var(--blue-primary));
+  background: linear-gradient(135deg, #0284c7, #2563eb);
   display: grid;
   place-items: center;
   color: #fff;
-  font-weight: 900;
-  font-size: 16px;
-  box-shadow: var(--cyan-glow);
+  font-weight: 800;
+  font-size: 15px;
+  box-shadow: var(--shadow-sm);
   flex-shrink: 0;
 }
 
@@ -78,14 +77,16 @@ body {
 .brand-text strong {
   font-family: var(--font-heading);
   font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-primary);
   letter-spacing: -0.02em;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .brand-text span {
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--ink-muted);
 }
 
@@ -95,146 +96,183 @@ body {
   gap: 8px;
 }
 
-/* Ribbon: Real-time API & Inundation Status */
-.status-ribbon {
+/* Quick Scenario Bar & KPI Header */
+.top-console-bar {
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border-subtle);
-  padding: 6px 0;
-  font-size: 11px;
-  color: var(--ink-muted);
+  padding: 10px 0;
+  box-shadow: var(--shadow-xs);
 }
 
-.ribbon-content {
+.console-bar-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
-.ribbon-group {
+.scenario-presets-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.scenario-label {
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 4px;
+}
+
+/* KPI Scorecards Grid */
+.kpi-row-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.kpi-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  box-shadow: var(--shadow-sm);
   display: flex;
   align-items: center;
   gap: 14px;
-  flex-wrap: wrap;
+  transition: transform var(--trans-fast), box-shadow var(--trans-fast);
+}
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
-/* Main Presentation Deck Layout (2-Column Grid) */
-.presentation-grid {
+.kpi-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
   display: grid;
-  grid-template-columns: 370px 1fr;
-  gap: 20px;
-  margin: 20px 0 40px;
-  align-items: start;
-  flex: 1;
+  place-items: center;
+  flex-shrink: 0;
 }
+.kpi-icon-wrap.cyan { background: var(--cyan-soft); color: var(--cyan-primary); }
+.kpi-icon-wrap.green { background: var(--green-soft); color: var(--green-primary); }
+.kpi-icon-wrap.amber { background: var(--amber-soft); color: var(--amber-primary); }
+.kpi-icon-wrap.purple { background: var(--purple-soft); color: var(--purple-primary); }
 
-/* Control & Scenario HUD (Sidebar) */
-.control-hud {
+.kpi-info {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  position: sticky;
-  top: 76px;
-  max-height: calc(100vh - 90px);
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.control-hud::-webkit-scrollbar {
-  width: 4px;
-}
-.control-hud::-webkit-scrollbar-thumb {
-  background: var(--border-medium);
-  border-radius: 99px;
-}
-
-/* Visualizer Stage (Right Main Stage) */
-.visualizer-stage {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
   min-width: 0;
 }
 
-/* Map Display Card */
-.map-stage-card {
+.kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.kpi-value {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Main 3D Map Stage */
+.map-stage-container {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
   overflow: hidden;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
   position: relative;
+  margin-bottom: 24px;
 }
 
-#gisMap {
+#maplibreContainer {
   width: 100%;
-  height: 560px;
-  background: #060b13;
+  height: 580px;
+  background: #edf2f7;
 }
 
-/* Tabbed Deck Card */
-.deck-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-lg);
-}
-
-/* Floating Math Proofs Trigger Button */
-.floating-math-btn {
-  position: fixed;
-  right: 20px;
-  bottom: 24px;
-  z-index: 1050;
-  display: inline-flex;
+/* Floating 3D Map Control Bar */
+.map-floating-bar {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 500;
+  display: flex;
   align-items: center;
   gap: 8px;
-  padding: 11px 18px;
-  border-radius: var(--radius-full);
-  background: linear-gradient(135deg, #182840, #0c1421);
-  color: var(--cyan-primary);
-  border: 1px solid var(--cyan-primary);
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 13px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), var(--cyan-glow);
-  cursor: pointer;
-  transition: transform var(--trans-fast), box-shadow var(--trans-fast);
+  background: var(--bg-surface-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-md);
+  flex-wrap: wrap;
 }
 
-.floating-math-btn:hover {
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.8), 0 0 24px var(--cyan-primary);
+.map-floating-right {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-/* Collapsible Math Drawer (Right-side slide out) */
-.math-drawer-backdrop {
+/* Results & Analytics Deck */
+.analytics-deck {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 40px;
+}
+
+/* Slide-out Drawers (Settings & Math Proofs) */
+.app-drawer-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(6px);
   z-index: 2000;
   opacity: 0;
   visibility: hidden;
   transition: opacity var(--trans-base), visibility var(--trans-base);
 }
 
-.math-drawer-backdrop.open {
+.app-drawer-backdrop.open {
   opacity: 1;
   visibility: visible;
 }
 
-.math-drawer {
+.app-drawer {
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
-  width: min(100%, 580px);
+  width: min(100%, 540px);
   background: var(--bg-surface);
   border-left: 1px solid var(--border-subtle);
-  box-shadow: -15px 0 45px rgba(0, 0, 0, 0.7);
+  box-shadow: -15px 0 45px rgba(15, 23, 42, 0.15);
   z-index: 2001;
   display: flex;
   flex-direction: column;
@@ -242,29 +280,57 @@ body {
   transition: transform var(--trans-smooth);
 }
 
-.math-drawer-backdrop.open .math-drawer {
+.app-drawer-backdrop.open .app-drawer {
   transform: translateX(0);
+}
+
+.drawer-header {
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-surface-2);
+}
+
+.drawer-header h3 {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-primary);
+}
+
+.drawer-body {
+  padding: 22px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.drawer-footer {
+  padding: 14px 22px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-surface-2);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 /* ==========================================================================
    RESPONSIVE BREAKPOINTS (MOBILE, TABLET, LAPTOP, PC)
    ========================================================================== */
 
-/* Tablet & Chromebook (Max 1100px) */
-@media (max-width: 1100px) {
-  .presentation-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 1024px) {
+  .kpi-row-grid {
+    grid-template-columns: 1fr 1fr;
   }
-  .control-hud {
-    position: static;
-    max-height: none;
-  }
-  #gisMap {
-    height: 460px;
+  #maplibreContainer {
+    height: 480px;
   }
 }
 
-/* Mobile & iPhone (Max 680px) */
 @media (max-width: 680px) {
   .container {
     width: calc(100% - 20px);
@@ -275,21 +341,21 @@ body {
   .brand-text span {
     display: none;
   }
-  #gisMap {
-    height: 360px;
+  .kpi-row-grid {
+    grid-template-columns: 1fr;
   }
-  .floating-math-btn {
-    bottom: 16px;
-    right: 16px;
-    padding: 8px 14px;
-    font-size: 11.5px;
+  #maplibreContainer {
+    height: 380px;
   }
-  .ribbon-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
+  .map-floating-bar {
+    position: static;
+    margin: 8px;
   }
-  .math-drawer {
+  .map-floating-right {
+    position: static;
+    margin: 8px;
+  }
+  .app-drawer {
     width: 100%;
   }
 }

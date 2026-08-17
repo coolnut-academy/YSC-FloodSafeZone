@@ -3,25 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-  <meta name="description" content="Flood Safe Zone (FSZ) — Research Platform for Flood Hazard-Weighted Evacuation Graph Model (FHEG) in Mae Hong Son." />
-  <title>Flood Safe Zone | FHEG Mathematical Model & Research Platform</title>
+  <meta name="description" content="Flood Safe Zone (FSZ) — Applied Mathematics Laboratory Console Dashboard for Flood Hazard-Weighted Evacuation Graph Model (FHEG) in Mae Hong Son." />
+  <title>Flood Safe Zone | FHEG Mathematical Model & 3D Lab Console</title>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
 
-  <!-- Vendor CSS (Leaflet & KaTeX) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <!-- Vendor CSS (MapLibre GL 3D & KaTeX) -->
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" />
 
-  <!-- Modular Application Stylesheets -->
+  <!-- Modular Application Stylesheets (Pure Light Mode) -->
   <link rel="stylesheet" href="css/design-tokens.css" />
   <link rel="stylesheet" href="css/layout.css" />
   <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/visualizers.css" />
 </head>
-<body data-theme="dark">
+<body>
 
   <!-- Top App Navigation Bar -->
   <header class="app-header">
@@ -29,409 +29,421 @@
       <div class="brand-section">
         <div class="brand-badge-logo">FSZ</div>
         <div class="brand-text">
-          <strong>Flood Safe Zone <span class="badge badge-cyan">FHEG v2.4</span></strong>
-          <span>Applied Mathematics Research Platform · Mae Hong Son Case Study</span>
+          <strong>Flood Safe Zone <span class="badge badge-cyan">FHEG v2.5 Lab</span></strong>
+          <span>Applied Mathematics Laboratory Console · Mae Hong Son Study</span>
         </div>
       </div>
 
       <div class="nav-actions">
+        <!-- Settings Drawer Trigger Button -->
+        <button class="btn btn-primary" id="btnOpenSettings" title="เปิดหน้าต่างปรับตั้งค่าพารามิเตอร์">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          ⚙️ ปรับพารามิเตอร์ (Settings)
+        </button>
+
         <!-- Data Sources Button -->
-        <button class="btn btn-outline" id="btnDataSources" title="ดูที่มาของข้อมูลทั้งหมดในระบบ">
+        <button class="btn btn-outline" id="btnDataSources" title="ดูที่มาของข้อมูลและ APIs ทั้งหมด">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
           ที่มาข้อมูล & APIs
         </button>
 
         <!-- Export Evidence Button -->
-        <button class="btn btn-outline" id="btnExportData" title="Export CSV/JSON research logs">
+        <button class="btn btn-outline" id="btnExportData" title="Export CSV/JSON research evidence">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
           Export Evidence
-        </button>
-
-        <!-- Theme Toggle -->
-        <button class="btn-icon" id="btnThemeToggle" title="สลับธีม สว่าง/มืด">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Live Status & Ingestion Ribbon -->
-  <div class="status-ribbon">
-    <div class="container ribbon-content">
-      <div class="ribbon-group">
-        <span>📍 <strong>Location:</strong> อ.เมืองแม่ฮ่องสอน (19.300°N, 97.965°E)</span>
-        <span>🌐 <strong>OSM Road Graph:</strong> 28 Nodes / 42 Directed Edges</span>
-        <span>⛰️ <strong>DEM:</strong> Copernicus 30m Global Elevation</span>
+  <!-- Top Console Quick Preset Bar -->
+  <div class="top-console-bar">
+    <div class="container console-bar-content">
+      <div class="scenario-presets-group">
+        <span class="scenario-label">สถานการณ์จำลอง:</span>
+        <button class="preset-btn-chip" data-preset="s1">S1: ระดับปกติ (Baseline)</button>
+        <button class="preset-btn-chip active" data-preset="s2">S2: น้ำหลากไหลเร็ว (Moderate Flow)</button>
+        <button class="preset-btn-chip" data-preset="s3">S3: วิกฤตถนนตัดขาด (Severe Cutoff)</button>
       </div>
-      <div class="ribbon-group">
-        <span>🌊 <strong>Pai River Discharge (GloFAS):</strong> <strong id="livePaiDischarge" style="color:var(--cyan-primary);">42.8 m³/s</strong></span>
-        <span>🌧️ <strong>Rainfall:</strong> <strong id="liveRainfall" style="color:var(--cyan-primary);">0.0 mm/h</strong></span>
-        <span>🛣️ <strong>Feasible Edges:</strong> <strong id="hydroFeasibleText" style="color:var(--green-primary);">38 / 42 Edges</strong></span>
-        <span><a href="#" id="btnRefreshAPI" style="color:var(--cyan-primary);text-decoration:underline;">Fetch Live API</a></span>
+
+      <div style="font-size:12px;color:var(--ink-muted);display:flex;align-items:center;gap:12px;">
+        <span>📍 พิกัดเทศบาลเมืองแม่ฮ่องสอน (19.300°N, 97.965°E)</span>
+        <span>⛰️ DEM: Copernicus 30m</span>
       </div>
     </div>
   </div>
 
-  <!-- Main Presentation Deck Layout -->
-  <div class="container presentation-grid">
-    <!-- Left Column: Scenario & Parameter HUD Controls -->
-    <aside class="control-hud">
-      <!-- Scenario Selection Panel -->
-      <div class="hud-panel">
-        <div class="hud-panel-header">
-          <h3>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-            Synthetic Scenarios
-          </h3>
-          <span class="badge badge-cyan">Presets</span>
+  <main class="container" style="flex:1;">
+    <!-- Clean KPI Scorecards Row -->
+    <section class="kpi-row-grid">
+      <!-- KPI 1: Selected Safe Zone -->
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap cyan">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
         </div>
-
-        <div class="preset-button-grid">
-          <button class="preset-chip" data-preset="s1" title="น้ำท่วมต่ำ ตรวจสอบ Baseline">S1: Low Hazard</button>
-          <button class="preset-chip active" data-preset="s2" title="น้ำตื้นแต่ไหลเร็ว พิสูจน์ขีดจำกัด Depth-Only">S2: Fast Flow</button>
-          <button class="preset-chip" data-preset="s3" title="น้ำท่วมรุนแรง ถนนถูกตัดขาดหลายเส้น">S3: Cutoff</button>
-        </div>
-
-        <!-- Slider: Risk Aversion (Lambda) -->
-        <div class="control-item">
-          <div class="control-label-row">
-            <span>Risk Preference ($\lambda$)</span>
-            <span class="control-val-display" id="valLambda">5.00</span>
-          </div>
-          <input type="range" id="paramLambda" class="hud-slider" min="0" max="25" step="0.1" value="5.0" />
-          <div class="control-helper">$\lambda=0$: สนใจเฉพาะเวลา | $\lambda > 10$: หลีกเลี่ยงความเสี่ยงสูง</div>
-        </div>
-
-        <!-- Slider: Flood Intensity -->
-        <div class="control-item">
-          <div class="control-label-row">
-            <span>Flood Intensity ($h \times v$)</span>
-            <span class="control-val-display" id="valWater">1.00×</span>
-          </div>
-          <input type="range" id="paramWater" class="hud-slider" min="0.4" max="2.2" step="0.05" value="1.0" />
-          <div class="control-helper">ปรับสเกลความลึกน้ำ $h_e$ และความเร็วการไหล $v_e$</div>
-        </div>
-
-        <!-- Slider: Debris Factor -->
-        <div class="control-item">
-          <div class="control-label-row">
-            <span>Debris Factor ($D_e$)</span>
-            <span class="control-val-display" id="valDebris">0.15</span>
-          </div>
-          <input type="range" id="paramDebris" class="hud-slider" min="0" max="0.8" step="0.05" value="0.15" />
-          <div class="control-helper">สิ่งกีดขวาง/เศษไม้ที่ลอยมากับกระแสน้ำ</div>
-        </div>
-
-        <!-- Slider: Hazard Attenuation Power p -->
-        <div class="control-item">
-          <div class="control-label-row">
-            <span>Hazard Attenuation ($p$)</span>
-            <span class="control-val-display" id="valPowerP">1.50</span>
-          </div>
-          <input type="range" id="paramPowerP" class="hud-slider" min="0.5" max="3.0" step="0.1" value="1.5" />
-          <div class="control-helper">ความโค้งของฟังก์ชันลดทอนความเร็ว $\phi_p(H)$</div>
+        <div class="kpi-info">
+          <span class="kpi-label">Safe Zone ที่เหมาะสมที่สุด</span>
+          <strong class="kpi-value" id="kpiSelectedZone" style="color:var(--cyan-primary);">Z2: ศาลากลาง</strong>
         </div>
       </div>
 
-      <!-- TOPSIS Criteria Weights Configuration -->
-      <div class="hud-panel">
-        <div class="hud-panel-header">
-          <h3>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="m4.93 4.93 4.24 4.24M14.83 14.83l4.24 4.24M14.83 9.17l4.24-4.24M4.93 19.07l4.24-4.24"></path></svg>
-            TOPSIS Criteria Weights ($w_j$)
-          </h3>
+      <!-- KPI 2: Modeled Travel Time ETA -->
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap green">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">เวลาเดินเท้าเฉลี่ย (ETA)</span>
+          <strong class="kpi-value" id="kpiEta" style="color:var(--green-primary);">7.42 min</strong>
+        </div>
+      </div>
+
+      <!-- KPI 3: Live River Discharge -->
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap amber">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M2 6c3 0 5 2 8 2s5-2 8-2 5 2 8 2M2 18c3 0 5-2 8-2s5 2 8 2 5-2 8-2"></path></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">อัตราการไหลแม่น้ำปาย (GloFAS)</span>
+          <strong class="kpi-value" id="kpiPaiFlow" style="color:#d97706;">42.8 m³/s</strong>
+        </div>
+      </div>
+
+      <!-- KPI 4: Algorithmic Verification -->
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap purple">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">A* vs Dijkstra Verification</span>
+          <strong class="kpi-value" id="kpiVerified" style="color:var(--purple-primary);font-size:15px;">A* = Dijkstra (100%)</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main 3D Map Viewport Stage -->
+    <section class="map-stage-container">
+      <!-- Floating Map Control Bar -->
+      <div class="map-floating-bar">
+        <button class="btn btn-action" id="btnToggle3D" style="padding:5px 10px;font-size:11.5px;">3D View (55°)</button>
+
+        <!-- Red, Yellow, Green Zone Filters -->
+        <span style="font-size:11px;font-weight:700;color:var(--ink-muted);margin-left:4px;">ชั้นข้อมูลน้ำท่วม:</span>
+        <div class="zone-pill active red" id="pillRedZone" title="คลิกเปิด/ปิด Red Zone">🔴 Red Zone (H ≥ 1.25)</div>
+        <div class="zone-pill active yellow" id="pillYellowZone" title="คลิกเปิด/ปิด Yellow Zone">🟡 Yellow Zone (0.6 ≤ H < 1.25)</div>
+        <div class="zone-pill active green" id="pillGreenZone" title="คลิกเปิด/ปิด Green Zone">🟢 Green Safe Zone (H < 0.25)</div>
+
+        <button class="btn btn-outline" id="btnResetMap" style="padding:4px 8px;font-size:11px;">Center</button>
+      </div>
+
+      <div class="map-floating-right">
+        <button class="btn btn-simulate" id="btnSimulateSolver" title="จำลองการค้นหาเส้นทาง 3 มิติแบบเคลื่อนไหว">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          Simulate Search Flow
+        </button>
+      </div>
+
+      <!-- 3D Map Canvas -->
+      <div id="maplibreContainer"></div>
+    </section>
+
+    <!-- Analytics & Verification Results Deck -->
+    <section class="analytics-deck">
+      <nav class="deck-tab-nav">
+        <button class="deck-tab-btn active" data-tab="tab-routes">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+          1. สรุปเส้นทาง & การสลับเส้นทาง (Route Comparison)
+        </button>
+        <button class="deck-tab-btn" data-tab="tab-topsis">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          2. การตัดสินใจหลายเกณฑ์ (TOPSIS Engine)
+        </button>
+        <button class="deck-tab-btn" data-tab="tab-verify">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          3. ตรวจสอบความถูกต้องทางคณิตศาสตร์ (A* vs Dijkstra Verification)
+        </button>
+        <button class="deck-tab-btn" data-tab="tab-sensitivity">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          4. การวิเคราะห์ความไว (Sensitivity Sweeps)
+        </button>
+      </nav>
+
+      <!-- TAB 1: Route Summary -->
+      <div class="deck-pane-content active" id="tab-routes">
+        <div style="overflow-x:auto;">
+          <table class="console-table" id="routeTable">
+            <thead>
+              <tr>
+                <th>รหัส Safe Zone</th>
+                <th>สถานที่</th>
+                <th>ระยะทาง (m)</th>
+                <th>เวลาเดินเท้า $T(P)$</th>
+                <th>ความเสี่ยงสะสม $R(P)$</th>
+                <th>ต้นทุนรวม $W_\lambda(P)$</th>
+                <th>คะแนน TOPSIS</th>
+                <th>สถานะเส้นทาง</th>
+              </tr>
+            </thead>
+            <tbody id="routeTableBody"></tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:24px;">
+          <h4 style="font-family:var(--font-heading);font-size:13px;font-weight:700;color:var(--ink-primary);margin-bottom:4px;">
+            กราฟความสัมพันธ์ต้นทุนเส้นทาง $W_\lambda(P)$ กับค่าความกลัวความเสี่ยง ($\lambda$)
+          </h4>
+          <p style="font-size:11.5px;color:var(--ink-muted);">จุดตัดของเส้นกราฟคือ Analytical Route Switching Thresholds ($\lambda_{ij} = \frac{T_j - T_i}{R_i - R_j}$)</p>
+          <div class="chart-container-wrap">
+            <canvas id="switchingChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: TOPSIS Engine -->
+      <div class="deck-pane-content" id="tab-topsis">
+        <h4 style="font-family:var(--font-heading);font-size:13px;font-weight:700;color:var(--cyan-primary);margin-bottom:8px;">1. Raw Decision Matrix ($X$)</h4>
+        <div style="overflow-x:auto;margin-bottom:18px;">
+          <table class="console-table">
+            <thead>
+              <tr>
+                <th>Zone</th>
+                <th>C1: Travel Time (min) [Cost]</th>
+                <th>C2: Elevation MSL (m) [Benefit]</th>
+                <th>C3: River Buffer (m) [Benefit]</th>
+                <th>C4: Capacity (Persons) [Benefit]</th>
+              </tr>
+            </thead>
+            <tbody id="topsisRawBody"></tbody>
+          </table>
+        </div>
+
+        <h4 style="font-family:var(--font-heading);font-size:13px;font-weight:700;color:var(--cyan-primary);margin-bottom:8px;">2. Separation Measures ($D_i^+, D_i^-$) & Relative Closeness ($C_i^*$)</h4>
+        <div style="overflow-x:auto;">
+          <table class="console-table">
+            <thead>
+              <tr>
+                <th>Zone</th>
+                <th>Distance to Positive Ideal ($D_i^+$)</th>
+                <th>Distance to Negative Ideal ($D_i^-$)</th>
+                <th>Relative Closeness ($C_i^*$)</th>
+                <th>TOPSIS Rank</th>
+              </tr>
+            </thead>
+            <tbody id="topsisResultBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 3: A* vs Dijkstra Verification (Fixed KaTeX Layout) -->
+      <div class="deck-pane-content" id="tab-verify">
+        <div class="verify-score-grid">
+          <div class="score-box">
+            <span>Identity Verification</span>
+            <strong id="verifyOverallBadge" style="color:var(--green-primary);">PASS (100%)</strong>
+          </div>
+          <div class="score-box">
+            <span>Max Cost Diff ($\Delta C$)</span>
+            <strong id="verifyMaxError">0.000000</strong>
+          </div>
+          <div class="score-box">
+            <span>Tolerance ($\epsilon = 10^{-6}$)</span>
+            <strong>1.0000e-6</strong>
+          </div>
+          <div class="score-box">
+            <span>A* Speedup</span>
+            <strong style="color:var(--cyan-primary);">~38% Faster</strong>
+          </div>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table class="console-table">
+            <thead>
+              <tr>
+                <th>Safe Zone</th>
+                <th>A* Cost</th>
+                <th>Dijkstra Cost</th>
+                <th>Absolute Diff</th>
+                <th>A* Nodes</th>
+                <th>Dijkstra Nodes</th>
+                <th>Runtime (ms)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="solverVerifyBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 4: Sensitivity Sweeps -->
+      <div class="deck-pane-content" id="tab-sensitivity">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:18px;">
+          <div>
+            <h4 style="font-family:var(--font-heading);font-size:12.5px;color:var(--ink-secondary);margin-bottom:6px;">1. Feasible Edges vs. Flood Depth Scale</h4>
+            <div class="chart-container-wrap" style="height:230px;">
+              <canvas id="sensitivityFloodChart"></canvas>
+            </div>
+          </div>
+          <div>
+            <h4 style="font-family:var(--font-heading);font-size:12.5px;color:var(--ink-secondary);margin-bottom:6px;">2. Speed Attenuation $\phi_p(H)$ vs. Hazard Level</h4>
+            <div class="chart-container-wrap" style="height:230px;">
+              <canvas id="attenuationChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Floating Mathematical Drawer Trigger Button -->
+  <button class="btn btn-outline" id="btnOpenMathDrawer" style="position:fixed;bottom:20px;right:20px;z-index:900;box-shadow:var(--shadow-md);background:#fff;border-color:var(--cyan-primary);color:var(--cyan-primary);font-weight:700;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+    📐 ดูสมการ & การพิสูจน์ (KaTeX Proofs)
+  </button>
+
+  <!-- Slide-out Drawer: Settings & Parameters (Clean Progressive Disclosure) -->
+  <div class="app-drawer-backdrop" id="drawerSettings">
+    <aside class="app-drawer">
+      <div class="drawer-header">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          ตั้งค่าพารามิเตอร์การจำลอง (Simulation Parameters)
+        </h3>
+        <button class="btn-icon" id="btnCloseSettings">&times;</button>
+      </div>
+
+      <div class="drawer-body">
+        <!-- 1. FHEG Parameters -->
+        <div class="form-section-title">
+          <span>1. พารามิเตอร์ FHEG Graph Model</span>
+          <span class="badge badge-cyan">Model Core</span>
+        </div>
+
+        <div class="form-group-item">
+          <div class="form-label-row">
+            <span>Risk Preference ($\lambda$)</span>
+            <span class="form-val-badge" id="valLambda">5.00</span>
+          </div>
+          <input type="range" id="paramLambda" class="console-slider" min="0" max="25" step="0.1" value="5.0" />
+          <div class="form-subtext">$\lambda=0$: สนใจเฉพาะเวลา | $\lambda > 10$: หลีกเลี่ยงความเสี่ยงสูง</div>
+        </div>
+
+        <div class="form-group-item">
+          <div class="form-label-row">
+            <span>Flood Intensity ($h \times v$)</span>
+            <span class="form-val-badge" id="valWater">1.00×</span>
+          </div>
+          <input type="range" id="paramWater" class="console-slider" min="0.4" max="2.2" step="0.05" value="1.0" />
+          <div class="form-subtext">ตัวคูณระดับความลึก $h_e$ และความเร็วการไหล $v_e$</div>
+        </div>
+
+        <div class="form-group-item">
+          <div class="form-label-row">
+            <span>Debris Factor ($D_e$)</span>
+            <span class="form-val-badge" id="valDebris">0.15</span>
+          </div>
+          <input type="range" id="paramDebris" class="console-slider" min="0" max="0.8" step="0.05" value="0.15" />
+          <div class="form-subtext">สิ่งกีดขวาง/เศษซากไม้ที่มากับกระแสน้ำ</div>
+        </div>
+
+        <div class="form-group-item">
+          <div class="form-label-row">
+            <span>Attenuation Power ($p$)</span>
+            <span class="form-val-badge" id="valPowerP">1.50</span>
+          </div>
+          <input type="range" id="paramPowerP" class="console-slider" min="0.5" max="3.0" step="0.1" value="1.5" />
+          <div class="form-subtext">ความโค้งของฟังก์ชันลดทอนความเร็ว $\phi_p(H)$</div>
+        </div>
+
+        <!-- 2. TOPSIS Criteria Weights -->
+        <div class="form-section-title" style="margin-top:24px;">
+          <span>2. น้ำหนักเกณฑ์การตัดสินใจ (TOPSIS Weights $w_j$)</span>
           <span class="badge badge-green">Sum = 1.0</span>
         </div>
 
-        <div class="control-item">
-          <div class="control-label-row"><span>C1: Travel Time ETA [Cost]</span><span class="control-val-display" id="valW1">0.35</span></div>
-          <input type="range" id="weightW1" class="hud-slider" min="0.05" max="0.7" step="0.05" value="0.35" />
+        <div class="form-group-item">
+          <div class="form-label-row"><span>C1: Travel Time ETA [Cost]</span><span class="form-val-badge" id="valW1">0.35</span></div>
+          <input type="range" id="weightW1" class="console-slider" min="0.05" max="0.7" step="0.05" value="0.35" />
         </div>
-        <div class="control-item">
-          <div class="control-label-row"><span>C2: Elevation [Benefit]</span><span class="control-val-display" id="valW2">0.25</span></div>
-          <input type="range" id="weightW2" class="hud-slider" min="0.05" max="0.7" step="0.05" value="0.25" />
+        <div class="form-group-item">
+          <div class="form-label-row"><span>C2: Elevation MSL [Benefit]</span><span class="form-val-badge" id="valW2">0.25</span></div>
+          <input type="range" id="weightW2" class="console-slider" min="0.05" max="0.7" step="0.05" value="0.25" />
         </div>
-        <div class="control-item">
-          <div class="control-label-row"><span>C3: River Buffer [Benefit]</span><span class="control-val-display" id="valW3">0.25</span></div>
-          <input type="range" id="weightW3" class="hud-slider" min="0.05" max="0.7" step="0.05" value="0.25" />
+        <div class="form-group-item">
+          <div class="form-label-row"><span>C3: River Buffer [Benefit]</span><span class="form-val-badge" id="valW3">0.25</span></div>
+          <input type="range" id="weightW3" class="console-slider" min="0.05" max="0.7" step="0.05" value="0.25" />
         </div>
-        <div class="control-item">
-          <div class="control-label-row"><span>C4: Capacity [Benefit]</span><span class="control-val-display" id="valW4">0.15</span></div>
-          <input type="range" id="weightW4" class="hud-slider" min="0.05" max="0.7" step="0.05" value="0.15" />
+        <div class="form-group-item">
+          <div class="form-label-row"><span>C4: Capacity [Benefit]</span><span class="form-val-badge" id="valW4">0.15</span></div>
+          <input type="range" id="weightW4" class="console-slider" min="0.05" max="0.7" step="0.05" value="0.15" />
         </div>
+      </div>
+
+      <div class="drawer-footer">
+        <button class="btn btn-primary" id="btnApplySettings" style="width:100%;">
+          ⚡ นำไปใช้และคำนวณใหม่ทันที (Apply & Compute)
+        </button>
       </div>
     </aside>
-
-    <!-- Right Column: Visualizer Stage & Research Deck -->
-    <main class="visualizer-stage">
-      <!-- Real-Time Calculation Ticker Bar (WOW Factor for Judges) -->
-      <div class="live-calc-ticker">
-        <div class="ticker-item">
-          <span class="ticker-label">Solver Runtime</span>
-          <span class="ticker-val" id="tickerExecTime">0.82 ms</span>
-        </div>
-        <div class="ticker-item">
-          <span class="ticker-label">Feasible Network</span>
-          <span class="ticker-val" id="tickerFeasible" style="color:var(--green-primary);">38 / 42 Edges</span>
-        </div>
-        <div class="ticker-item">
-          <span class="ticker-label">Optimal Route Cost $W_\lambda$</span>
-          <span class="ticker-val" id="tickerOptimalCost" style="color:var(--cyan-primary);">14.28</span>
-        </div>
-        <div class="ticker-item">
-          <span class="ticker-label">TOPSIS Rank #1 Safe Zone</span>
-          <span class="ticker-val" id="tickerRank1" style="color:var(--amber-primary);">Z2 (0.812)</span>
-        </div>
-      </div>
-
-      <!-- Map Stage Card -->
-      <div class="map-stage-card">
-        <!-- Simulation HUD Float -->
-        <div class="simulation-hud">
-          <button class="btn btn-simulate" id="btnSimulateSolver" title="จำลองการค้นหาเส้นทางแบบเคลื่อนไหวบนแผนที่">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            Simulate Search Flow
-          </button>
-
-          <!-- Tile Layer Switcher (100% Free - No Card) -->
-          <select id="mapTileSelect" class="layer-select" style="background:var(--bg-surface-2);color:var(--ink-primary);border:1px solid var(--border-medium);border-radius:var(--radius-sm);padding:5px 8px;font-size:11.5px;">
-            <option value="carto-dark" selected>CartoDB Dark</option>
-            <option value="satellite">ESRI Satellite</option>
-            <option value="carto-voyager">CartoDB Light</option>
-            <option value="opentopo">OpenTopoMap</option>
-            <option value="osm">OpenStreetMap</option>
-          </select>
-
-          <button class="btn btn-outline" id="btnResetMap" style="padding:4px 8px;font-size:11px;">Center</button>
-        </div>
-
-        <!-- Leaflet Map Container -->
-        <div id="gisMap"></div>
-
-        <!-- Map Legend Bar -->
-        <div class="map-legend-bar" style="padding:8px 16px;background:var(--bg-surface-2);border-top:1px solid var(--border-subtle);display:flex;align-items:center;gap:16px;font-size:11px;color:var(--ink-muted);flex-wrap:wrap;">
-          <span class="legend-item"><span class="legend-line optimal"></span> Optimal Path ($P^*$)</span>
-          <span class="legend-item"><span class="legend-line feasible"></span> Feasible Edge ($H_e < 0.6$)</span>
-          <span class="legend-item"><span class="legend-line moderate"></span> Moderate ($0.6 \le H_e < 1.25$)</span>
-          <span class="legend-item"><span class="legend-line removed"></span> Infeasible Cutoff ($H_e \ge 1.25$)</span>
-          <span class="legend-item"><span class="legend-dot start"></span> จุดเริ่มต้นอพยพ (Start S)</span>
-          <span class="legend-item"><span class="legend-dot shelter"></span> Candidate Safe Zones (Z1–Z4)</span>
-        </div>
-      </div>
-
-      <!-- Tabbed Analytics Deck Card -->
-      <div class="deck-card">
-        <nav class="tab-header-nav">
-          <button class="tab-nav-btn active" data-tab="tab-routes">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
-            1. Route Comparison & Switching
-          </button>
-          <button class="tab-nav-btn" data-tab="tab-topsis">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            2. TOPSIS Matrix Inspector
-          </button>
-          <button class="tab-nav-btn" data-tab="tab-verification">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            3. A* vs Dijkstra Verification
-          </button>
-          <button class="tab-nav-btn" data-tab="tab-sensitivity">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-            4. Sensitivity Sweeps
-          </button>
-        </nav>
-
-        <!-- TAB 1: Route Comparison -->
-        <div class="deck-body-content active" id="tab-routes">
-          <div style="overflow-x:auto;">
-            <table class="stage-table" id="routeSummaryTable">
-              <thead>
-                <tr>
-                  <th>Safe Zone</th>
-                  <th>Location Name</th>
-                  <th>Distance</th>
-                  <th>Travel Time $T(P)$</th>
-                  <th>Modeled Risk $R(P)$</th>
-                  <th>FHEG Cost $W_\lambda(P)$</th>
-                  <th>TOPSIS Score</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="routeTableBody"></tbody>
-            </table>
-          </div>
-
-          <!-- Route Switching Chart -->
-          <div style="margin-top:20px;">
-            <h4 style="font-family:var(--font-heading);font-size:13px;margin-bottom:4px;">Route Cost Curves $W_\lambda(P)$ vs. Risk Aversion $\lambda$</h4>
-            <p style="font-size:11.5px;color:var(--ink-muted);">จุดตัดระหว่างเส้นตรงคือ Analytical Route Switching Thresholds ($\lambda_{ij} = \frac{T_j - T_i}{R_i - R_j}$)</p>
-            <div class="chart-stage-wrap">
-              <canvas id="switchingChart"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB 2: TOPSIS Matrix Inspector -->
-        <div class="deck-body-content" id="tab-topsis">
-          <h4 style="font-family:var(--font-heading);font-size:13px;color:var(--cyan-primary);margin-bottom:8px;">1. Raw Decision Matrix ($X$)</h4>
-          <div style="overflow-x:auto;margin-bottom:16px;">
-            <table class="stage-table" id="topsisRawTable">
-              <thead>
-                <tr>
-                  <th>Zone</th>
-                  <th>C1: Travel Time (min) [Cost]</th>
-                  <th>C2: Elevation MSL (m) [Benefit]</th>
-                  <th>C3: River Buffer (m) [Benefit]</th>
-                  <th>C4: Capacity (Persons) [Benefit]</th>
-                </tr>
-              </thead>
-              <tbody id="topsisRawBody"></tbody>
-            </table>
-          </div>
-
-          <h4 style="font-family:var(--font-heading);font-size:13px;color:var(--cyan-primary);margin-bottom:8px;">2. Separation Measures ($D_i^+, D_i^-$) & Closeness ($C_i^*$)</h4>
-          <div style="overflow-x:auto;">
-            <table class="stage-table" id="topsisResultTable">
-              <thead>
-                <tr>
-                  <th>Zone</th>
-                  <th>Distance to Positive Ideal ($D_i^+$)</th>
-                  <th>Distance to Negative Ideal ($D_i^-$)</th>
-                  <th>Relative Closeness ($C_i^*$)</th>
-                  <th>TOPSIS Rank</th>
-                </tr>
-              </thead>
-              <tbody id="topsisResultBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- TAB 3: A* vs Dijkstra Verification -->
-        <div class="deck-body-content" id="tab-verification">
-          <div class="verify-score-grid">
-            <div class="score-box">
-              <span>Identity Verification</span>
-              <strong id="verifyOverallBadge" style="color:var(--green-primary);">PASS (100%)</strong>
-            </div>
-            <div class="score-box">
-              <span>Max Cost Diff ($\Delta C$)</span>
-              <strong id="verifyMaxError">0.000000</strong>
-            </div>
-            <div class="score-box">
-              <span>Tolerance ($\epsilon$)</span>
-              <strong>$10^{-6}$</strong>
-            </div>
-            <div class="score-box">
-              <span>A* Search Speedup</span>
-              <strong style="color:var(--cyan-primary);">~38% Faster</strong>
-            </div>
-          </div>
-
-          <div style="overflow-x:auto;">
-            <table class="stage-table" id="solverVerifyTable">
-              <thead>
-                <tr>
-                  <th>Safe Zone</th>
-                  <th>A* Cost</th>
-                  <th>Dijkstra Cost</th>
-                  <th>Absolute Diff</th>
-                  <th>A* Nodes</th>
-                  <th>Dijkstra Nodes</th>
-                  <th>Runtime (ms)</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="solverVerifyBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- TAB 4: Sensitivity Sweeps -->
-        <div class="deck-body-content" id="tab-sensitivity">
-          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;">
-            <div>
-              <h4 style="font-family:var(--font-heading);font-size:12.5px;color:var(--ink-secondary);margin-bottom:4px;">1. Feasible Edges vs. Flood Depth Scale</h4>
-              <div class="chart-stage-wrap" style="height:220px;">
-                <canvas id="sensitivityFloodChart"></canvas>
-              </div>
-            </div>
-            <div>
-              <h4 style="font-family:var(--font-heading);font-size:12.5px;color:var(--ink-secondary);margin-bottom:4px;">2. Speed Attenuation $\phi_p(H)$ vs. Hazard Level</h4>
-              <div class="chart-stage-wrap" style="height:220px;">
-                <canvas id="attenuationChart"></canvas>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
   </div>
 
-  <!-- Floating Mathematical Drawer Trigger Button -->
-  <button class="floating-math-btn" id="btnOpenMathDrawer" title="คลิกเพื่อเปิดสมการและการพิสูจน์ทางคณิตศาสตร์">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-    📐 ดูสมการ & การพิสูจน์ (Math Proofs)
-  </button>
-
-  <!-- Collapsible Mathematical Drawer (Right-side slide out) -->
-  <div class="math-drawer-backdrop" id="mathDrawerBackdrop">
-    <aside class="math-drawer">
-      <div class="app-modal-head">
-        <h3 style="font-family:var(--font-heading);font-size:15px;display:flex;align-items:center;gap:8px;color:var(--cyan-primary);">
+  <!-- Slide-out Drawer: Mathematical Proofs & KaTeX Formulas -->
+  <div class="app-drawer-backdrop" id="drawerMathProofs">
+    <aside class="app-drawer">
+      <div class="drawer-header">
+        <h3>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-          FHEG Model Mathematical Proofs & Equations
+          สมการและบทพิสูจน์ทางคณิตศาสตร์ (FHEG Proofs)
         </h3>
         <button class="btn-icon" id="btnCloseMathDrawer">&times;</button>
       </div>
 
-      <div class="app-modal-body">
+      <div class="drawer-body">
         <p style="font-size:12px;color:var(--ink-secondary);margin-bottom:14px;">
-          สรุปสมการแกนกลางและการพิสูจน์คุณสมบัติทางคณิตศาสตร์ตาม Canonical Blueprint สำหรับอธิบายคณะกรรมการ
+          สรุปสมการหลักและบทพิสูจน์คุณสมบัติทางคณิตศาสตร์ตาม Canonical Blueprint สำหรับการนำเสนอ
         </p>
 
-        <div class="math-proof-card">
+        <div class="math-proof-item">
           <h4>1. Road Slope ($s_e$)</h4>
-          <div class="math-rendered-formula">$$s_e = \frac{z_j - z_i}{L_e}$$</div>
-          <div class="math-proof-desc">คำนวณความชันจากระดับความสูงจริง ($z_i, z_j$) เหนือระดับน้ำทะเลปานกลาง และระยะทาง $L_e$</div>
+          <div class="math-formula-box">$$s_e = \frac{z_j - z_i}{L_e}$$</div>
+          <div class="math-proof-text">คำนวณจากระดับความสูงจริงเหนือระดับน้ำทะเล ($z_i, z_j$) และระยะทาง $L_e$</div>
         </div>
 
-        <div class="math-proof-card">
+        <div class="math-proof-item">
           <h4>2. Flood Hazard Function ($H_e$) & Monotonicity</h4>
-          <div class="math-rendered-formula">$$H_e = h_e(v_e + 0.5) + D_e$$</div>
-          <div class="math-proof-desc">
-            <strong>Proof of Monotonicity:</strong> $\frac{\partial H}{\partial h} = v + 0.5 > 0$ และ $\frac{\partial H}{\partial v} = h \ge 0$ รับประกันว่าความเสี่ยงจะไม่ลดลงเมื่อระดับน้ำหรือความเร็วการไหลเพิ่มขึ้น
+          <div class="math-formula-box">$$H_e = h_e(v_e + 0.5) + D_e$$</div>
+          <div class="math-proof-text">
+            <strong>Proof:</strong> $\frac{\partial H}{\partial h} = v + 0.5 > 0$ และ $\frac{\partial H}{\partial v} = h \ge 0$ รับประกันว่าความเสี่ยงจะไม่ลดลงเมื่อระดับน้ำหรือความเร็วเพิ่มขึ้น
           </div>
         </div>
 
-        <div class="math-proof-card">
+        <div class="math-proof-item">
           <h4>3. Feasibility Constraint ($H_c = 1.25$)</h4>
-          <div class="math-rendered-formula">$$e \in E_F \iff H_e < 1.25$$</div>
-          <div class="math-proof-desc">ตัดช่วงถนนวิกฤต ($H_e \ge 1.25$) ออกจาก Feasible Subgraph $G_F$ ทันทีเพื่อความปลอดภัย</div>
+          <div class="math-formula-box">$$e \in E_F \iff H_e < 1.25$$</div>
+          <div class="math-proof-text">ตัดเส้นทางวิกฤต ($H_e \ge 1.25$) ออกจาก Feasible Subgraph $G_F$ ทันทีเพื่อความปลอดภัย</div>
         </div>
 
-        <div class="math-proof-card">
+        <div class="math-proof-item">
           <h4>4. Hazard Attenuation Function ($\phi_p$)</h4>
-          <div class="math-rendered-formula">$$\phi_p(H) = \left(\frac{H_c - H}{H_c - H_0}\right)^p,\quad H_0=0.25,\, H_c=1.25$$</div>
-          <div class="math-proof-desc">ฟังก์ชันลดทอนความเร็วแบบต่อเนื่อง $\phi_p \in [0, 1]$ เชื่อมต่ออย่างราบรื่นที่ $H_0$ และ $H_c$</div>
+          <div class="math-formula-box">$$\phi_p(H) = \left(\frac{H_c - H}{H_c - H_0}\right)^p,\quad H_0=0.25,\, H_c=1.25$$</div>
+          <div class="math-proof-text">ฟังก์ชันลดทอนความเร็วแบบต่อเนื่อง เชื่อมต่ออย่างราบรื่นที่ $H_0$ และ $H_c$</div>
         </div>
 
-        <div class="math-proof-card">
+        <div class="math-proof-item">
           <h4>5. Movement Speed ($u_e$) & Tobler Function</h4>
-          <div class="math-rendered-formula">$$u_e = V_T(s_e) \cdot \phi_p(H_e),\quad V_T(s_e) = 6 e^{-3.5|s_e + 0.05|}$$</div>
-          <div class="math-proof-desc">ความเร็วเดินเท้าปรับตามความลาดชันของภูมิประเทศและระดับอันตรายจากน้ำท่วม</div>
+          <div class="math-formula-box">$$u_e = V_T(s_e) \cdot \phi_p(H_e),\quad V_T(s_e) = 6 e^{-3.5|s_e + 0.05|}$$</div>
+          <div class="math-proof-text">ความเร็วเดินเท้าปรับตามความลาดชันภูมิประเทศและระดับน้ำท่วม</div>
         </div>
 
-        <div class="math-proof-card">
-          <h4>6. Risk-Equivalent & FHEG Edge Weight ($w_e$)</h4>
-          <div class="math-rendered-formula">$$w_e(\lambda) = t_e + \lambda \cdot r_e,\quad \min W_\lambda(P) = T(P) + \lambda R(P)$$</div>
-          <div class="math-proof-desc">
-            <strong>Route Switching Threshold:</strong> $\lambda_{ij} = \frac{T_j - T_i}{R_i - R_j}$ สำหรับวิเคราะห์จุดเปลี่ยนผ่านเส้นทาง
-          </div>
+        <div class="math-proof-item">
+          <h4>6. Risk-Equivalent & FHEG Weight ($w_e$)</h4>
+          <div class="math-formula-box">$$w_e(\lambda) = t_e + \lambda \cdot r_e,\quad \lambda_{ij} = \frac{T_j - T_i}{R_i - R_j}$$</div>
+          <div class="math-proof-text">วิเคราะห์จุดเปลี่ยนผ่านเส้นทาง (Analytical Route Switching Thresholds)</div>
         </div>
 
-        <div class="math-proof-card">
+        <div class="math-proof-item">
           <h4>7. A* Heuristic Admissibility & Consistency</h4>
-          <div class="math-rendered-formula">$$h(n) = \frac{\text{dist}(n, \text{goal})}{u_{\max}} \le w^*(n, \text{goal})$$</div>
-          <div class="math-proof-desc">Heuristic เป็น Lower Bound ที่แท้จริง รับประกันว่า A* จะค้นพบ Optimal Modeled Cost เสมอ</div>
+          <div class="math-formula-box">$$h(n) = \frac{\text{dist}(n, \text{goal})}{u_{\max}} \le w^*(n, \text{goal})$$</div>
+          <div class="math-proof-text">Heuristic เป็น Lower Bound ที่แท้จริง รับประกันการค้นพบ Optimal Cost เสมอ</div>
         </div>
       </div>
     </aside>
@@ -452,25 +464,25 @@
           ระบบ Flood Safe Zone (FSZ) ใช้ข้อมูลภูมิสารสนเทศ อุทกวิทยา และระดับความสูงจริง <strong>100% ฟรี ไม่ต้องผูกบัตรเครดิต และไม่มีค่าใช้จ่ายแอบแฝง</strong>:
         </p>
 
-        <div class="source-list" style="display:grid;gap:12px;">
-          <div class="source-item" style="padding:12px;border-radius:var(--radius-md);background:var(--bg-surface-2);border:1px solid var(--border-subtle);">
+        <div style="display:grid;gap:12px;">
+          <div style="padding:12px;border-radius:var(--radius-md);background:var(--bg-surface-2);border:1px solid var(--border-subtle);">
             <h4 style="font-size:13px;color:var(--cyan-primary);margin-bottom:4px;">1. โครงข่ายถนนจริง & จุดปลอดภัย (OpenStreetMap) <span class="badge badge-green">Open Source</span></h4>
             <p style="font-size:12px;color:var(--ink-secondary);">ดึงผ่าน Overpass API ในพิกัดเทศบาลเมืองแม่ฮ่องสอน (โรงเรียนห้องสอนศึกษา, ศาลากลางจังหวัด, วัดพระธาตุดอยกองมู, สนามกีฬากลาง)</p>
           </div>
 
-          <div class="source-item" style="padding:12px;border-radius:var(--radius-md);background:var(--bg-surface-2);border:1px solid var(--border-subtle);">
+          <div style="padding:12px;border-radius:var(--radius-md);background:var(--bg-surface-2);border:1px solid var(--border-subtle);">
             <h4 style="font-size:13px;color:var(--cyan-primary);margin-bottom:4px;">2. ระดับความสูงภูมิประเทศจริง (Digital Elevation Model) <span class="badge badge-green">Open Source</span></h4>
             <p style="font-size:12px;color:var(--ink-secondary);">Copernicus 30m Global DEM & SRTM ผ่าน Open-Meteo Elevation API สำหรับคำนวณ Slope ($s_e$)</p>
           </div>
 
-          <div class="source-item" style="padding:12px;border-radius:var(--radius-md);background:var(--bg-surface-2);border:1px solid var(--border-subtle);">
+          <div style="padding:12px;border-radius:var(--radius-md);background:var(--bg-surface-2);border:1px solid var(--border-subtle);">
             <h4 style="font-size:13px;color:var(--cyan-primary);margin-bottom:4px;">3. ข้อมูลอุทกวิทยาแม่น้ำปาย & ฝนสะสม (GloFAS & ECMWF) <span class="badge badge-green">Open Source</span></h4>
             <p style="font-size:12px;color:var(--ink-secondary);">Global Flood Awareness System (GloFAS) และ ECMWF Weather API สำหรับอัตราการไหล ($m^3/s$) และปริมาณฝน ($mm/h$)</p>
           </div>
 
-          <div class="source-item" style="padding:12px;border-radius:var(--radius-md);background:var(--bg-surface-2);border:1px solid var(--border-subtle);">
-            <h4 style="font-size:13px;color:var(--cyan-primary);margin-bottom:4px;">4. ภาพถ่ายดาวเทียม & แผนที่ (Base Map Tiles) <span class="badge badge-green">Free Tier</span></h4>
-            <p style="font-size:12px;color:var(--ink-secondary);">ESRI World Imagery Satellite, CartoDB Voyager & Dark Matter, OpenTopoMap (ไม่มีค่าใช้จ่าย)</p>
+          <div style="padding:12px;border-radius:var(--radius-md);background:var(--bg-surface-2);border:1px solid var(--border-subtle);">
+            <h4 style="font-size:13px;color:var(--cyan-primary);margin-bottom:4px;">4. ภาพถ่ายดาวเทียม & แผนที่ 3D (3D Raster Tiles) <span class="badge badge-green">Free Tier</span></h4>
+            <p style="font-size:12px;color:var(--ink-secondary);">CartoDB Voyager Light, ESRI World Imagery Satellite, OpenTopoMap (ไม่มีค่าใช้จ่าย)</p>
           </div>
         </div>
       </div>
@@ -493,7 +505,7 @@
       <div class="app-modal-body">
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:12px;margin-bottom:14px;">
           <div style="background:var(--bg-surface-2);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:12px;">
-            <h4 style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;margin-bottom:6px;">1. Raw Inputs & Topography</h4>
+            <h4 style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;margin-bottom:6px;">1. Topography & Slope</h4>
             <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;"><span>From:</span><strong id="inspectFrom">N01</strong></div>
             <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;"><span>To:</span><strong id="inspectTo">N02</strong></div>
             <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;"><span>Length:</span><strong id="inspectLength">245.0 m</strong></div>
@@ -512,7 +524,7 @@
         </div>
 
         <h4 style="font-family:var(--font-heading);font-size:12.5px;color:var(--ink-primary);margin-bottom:6px;">3. Step-by-Step Substitution Breakdown</h4>
-        <div class="step-calc-box" id="inspectCalcText">
+        <div class="inspect-calc-step-box" id="inspectCalcText">
           Loading calculation breakdown...
         </div>
       </div>
@@ -522,8 +534,8 @@
     </div>
   </div>
 
-  <!-- Vendor JS Libraries (Leaflet, Chart.js, KaTeX) -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Vendor JS Libraries (MapLibre GL 3D, Chart.js, KaTeX) -->
+  <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>

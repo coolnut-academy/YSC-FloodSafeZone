@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP MAIN CONTROLLER & ORCHESTRATION
+   APP MAIN CONTROLLER (PURE LIGHT LABORATORY DASHBOARD)
    ========================================================================== */
 
 const App = {
@@ -21,7 +21,7 @@ const App = {
 
   init() {
     MapVisualizer.init(
-      "gisMap",
+      "maplibreContainer",
       edge => this.openEdgeInspector(edge),
       zoneId => this.selectShelter(zoneId)
     );
@@ -35,7 +35,7 @@ const App = {
   recomputeAll() {
     const t0 = performance.now();
 
-    // 1. Read input values
+    // 1. Read input values from Settings Drawer
     this.state.lambda = parseFloat(document.getElementById("paramLambda").value);
     this.state.waterScale = parseFloat(document.getElementById("paramWater").value);
     this.state.debris = parseFloat(document.getElementById("paramDebris").value);
@@ -171,7 +171,7 @@ const App = {
     const t1 = performance.now();
     const execTime = (t1 - t0);
 
-    // 5. Update Visualizers, Tickers, and Map
+    // 5. Update Visualizers, KPI cards, and Map
     this.renderUI(execTime);
   },
 
@@ -180,18 +180,17 @@ const App = {
     const bestRoute = this.state.selectedZoneId ? this.routeResults[this.state.selectedZoneId] : null;
     const rank1Item = this.topsisData?.results?.find(r => r.rank === 1);
 
-    // Update Live Calculation Ticker
-    LiveComputeAnim.updateTicker(
+    // Update Top KPI Cards
+    LiveComputeAnim.updateKPIs(
       execTimeMs,
       feasibleCount,
       bestRoute?.cost,
-      rank1Item ? `${rank1Item.zoneId} (${rank1Item.closeness.toFixed(3)})` : "—"
+      rank1Item,
+      this.state.selectedZoneId,
+      this.routeResults
     );
 
-    // Update Hydro Ribbon stats
-    document.getElementById("hydroFeasibleText").textContent = `${feasibleCount} / 42 Edges (${((feasibleCount / 42) * 100).toFixed(1)}%)`;
-
-    // Render Map
+    // Render 3D Map
     MapVisualizer.renderNetwork(
       MAEHONGSON_NODES,
       this.computedEdges,
@@ -200,7 +199,7 @@ const App = {
       this.routeResults
     );
 
-    // Render Route Summary Table
+    // Render Tables
     this.renderRouteTable();
     this.renderTOPSISTables();
     this.renderVerificationTable();
@@ -209,7 +208,7 @@ const App = {
     ChartVisualizer.renderSwitching("switchingChart", this.routeResults, this.state.lambda);
     ChartVisualizer.renderSensitivity("sensitivityFloodChart", "attenuationChart", this.state.powerP);
 
-    // Render KaTeX Math in Drawers & Proof Cards
+    // Render KaTeX Math
     if (window.renderMathInElement) {
       renderMathInElement(document.body, {
         delimiters: [
@@ -273,7 +272,7 @@ const App = {
         <td>${t.raw[0] > 500 ? "Infeasible" : t.raw[0].toFixed(2)}</td>
         <td>${t.raw[1].toFixed(1)} m</td>
         <td>${t.raw[2].toFixed(0)} m</td>
-        <td>${t.raw[3].toLocaleString()}</td>
+        <td>${t.raw[3].toLocaleString()} คน</td>
       `;
       rawBody.appendChild(rawTr);
 
@@ -331,6 +330,14 @@ const App = {
         this.routeResults
       );
       this.renderRouteTable();
+      LiveComputeAnim.updateKPIs(
+        0.8,
+        this.computedEdges.filter(e => e.feasible).length,
+        this.routeResults[zoneId].cost,
+        this.topsisData?.results?.find(r => r.rank === 1),
+        this.state.selectedZoneId,
+        this.routeResults
+      );
     }
   },
 
@@ -354,7 +361,7 @@ const App = {
       badge.textContent = "FEASIBLE (H < 1.25)";
     } else {
       badge.className = "badge badge-red";
-      badge.textContent = "BLOCKED: EXCLUDED (H ≥ 1.25)";
+      badge.textContent = "BLOCKED (H ≥ 1.25)";
     }
 
     const calcText = `
@@ -365,14 +372,14 @@ const App = {
   H_e = h_e * (v_e + 0.5) + D_e
       = ${edge.he.toFixed(2)} * (${edge.ve.toFixed(2)} + 0.5) + ${edge.De.toFixed(2)}
       = ${edge.He.toFixed(4)}
-  Feasibility Check: H_e ${edge.feasible ? '<' : '≥'} 1.25 ==> ${edge.feasible ? 'INCLUDED IN G_F' : 'CUTOFF / REMOVED'}
+  Feasibility: H_e ${edge.feasible ? '<' : '≥'} 1.25 ==> ${edge.feasible ? 'INCLUDED IN G_F' : 'REMOVED / CUTOFF'}
 
 [Step 3: Attenuation & Walking Speed]
   phi_p(H_e) = ((1.25 - ${edge.He.toFixed(3)}) / (1.25 - 0.25))^p = ${edge.phi.toFixed(4)}
-  Base Walking Speed (Tobler) = ${edge.baseSpeed.toFixed(1)} m/min (${(edge.baseSpeed * 0.06).toFixed(2)} km/h)
+  Base Speed (Tobler) = ${edge.baseSpeed.toFixed(1)} m/min (${(edge.baseSpeed * 0.06).toFixed(2)} km/h)
   Effective Speed u_e = ${edge.effectiveSpeed.toFixed(1)} m/min (${(edge.effectiveSpeed * 0.06).toFixed(2)} km/h)
 
-[Step 4: Cost Terms]
+[Step 4: Cost Calculation]
   Travel Time t_e = L_e / u_e = ${edge.length.toFixed(1)} / ${edge.effectiveSpeed.toFixed(1)} = ${edge.te.toFixed(3)} min
   Risk Time r_e   = ${isFinite(edge.re) ? edge.re.toFixed(3) + ' min-eq' : 'Infinity'}
   FHEG Weight w_e = t_e + λ * r_e = ${isFinite(edge.weight) ? edge.weight.toFixed(3) : 'Infinity'}
@@ -394,15 +401,7 @@ const App = {
 
       if (floodRes?.daily?.river_discharge?.[0]) {
         const discharge = floodRes.daily.river_discharge[0];
-        document.getElementById("livePaiDischarge").textContent = `${discharge.toFixed(1)} m³/s`;
-      } else {
-        document.getElementById("livePaiDischarge").textContent = "38.5 m³/s (Baseline)";
-      }
-
-      if (weatherRes?.current?.precipitation !== undefined) {
-        document.getElementById("liveRainfall").textContent = `${weatherRes.current.precipitation.toFixed(1)} mm/h`;
-      } else {
-        document.getElementById("liveRainfall").textContent = "0.0 mm/h";
+        document.getElementById("kpiPaiFlow").textContent = `${discharge.toFixed(1)} m³/s`;
       }
     } catch (err) {
       console.warn("Live API ingestion fallback:", err);
@@ -410,15 +409,10 @@ const App = {
   },
 
   bindEvents() {
-    // Sliders
-    ["paramLambda", "paramWater", "paramDebris", "paramPowerP", "weightW1", "weightW2", "weightW3", "weightW4"].forEach(id => {
-      document.getElementById(id).addEventListener("input", () => this.recomputeAll());
-    });
-
     // Preset Buttons
-    document.querySelectorAll(".preset-chip").forEach(btn => {
+    document.querySelectorAll(".preset-btn-chip").forEach(btn => {
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".preset-chip").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".preset-btn-chip").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         const p = btn.dataset.preset;
         this.state.currentScenario = p;
@@ -440,23 +434,24 @@ const App = {
       });
     });
 
-    // Deck Tabs
-    document.querySelectorAll(".tab-nav-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".tab-nav-btn").forEach(b => b.classList.remove("active"));
-        document.querySelectorAll(".deck-body-content").forEach(c => c.classList.remove("active"));
-
-        btn.classList.add("active");
-        const tabId = btn.dataset.tab;
-        document.getElementById(tabId).classList.add("active");
-
-        ChartVisualizer.resizeAll();
-      });
+    // Zone Filter Pills
+    document.getElementById("pillRedZone").addEventListener("click", function() {
+      const active = MapVisualizer.toggleZone("red");
+      this.classList.toggle("active", active);
+    });
+    document.getElementById("pillYellowZone").addEventListener("click", function() {
+      const active = MapVisualizer.toggleZone("yellow");
+      this.classList.toggle("active", active);
+    });
+    document.getElementById("pillGreenZone").addEventListener("click", function() {
+      const active = MapVisualizer.toggleZone("green");
+      this.classList.toggle("active", active);
     });
 
-    // Map Layer Switcher
-    document.getElementById("mapTileSelect").addEventListener("change", e => {
-      MapVisualizer.switchTileLayer(e.target.value);
+    // 2D / 3D Toggle
+    document.getElementById("btnToggle3D").addEventListener("click", function() {
+      const is3D = MapVisualizer.toggle3DView();
+      this.textContent = is3D ? "3D View (55°)" : "2D Top-Down";
     });
 
     document.getElementById("btnResetMap").addEventListener("click", () => {
@@ -474,18 +469,28 @@ const App = {
       }
     });
 
-    // Mathematical Drawer Toggle
-    const drawerBackdrop = document.getElementById("mathDrawerBackdrop");
-    const openDrawer = () => drawerBackdrop.classList.add("open");
-    const closeDrawer = () => drawerBackdrop.classList.remove("open");
-
-    document.getElementById("btnOpenMathDrawer").onclick = openDrawer;
-    document.getElementById("btnCloseMathDrawer").onclick = closeDrawer;
-    drawerBackdrop.onclick = e => {
-      if (e.target === drawerBackdrop) closeDrawer();
+    // Settings Drawer Controls
+    const drawerSettings = document.getElementById("drawerSettings");
+    document.getElementById("btnOpenSettings").onclick = () => drawerSettings.classList.add("open");
+    document.getElementById("btnCloseSettings").onclick = () => drawerSettings.classList.remove("open");
+    document.getElementById("btnApplySettings").onclick = () => {
+      this.recomputeAll();
+      drawerSettings.classList.remove("open");
     };
 
-    // Modals
+    // Live update sliders inside drawer
+    ["paramLambda", "paramWater", "paramDebris", "paramPowerP", "weightW1", "weightW2", "weightW3", "weightW4"].forEach(id => {
+      document.getElementById(id).addEventListener("input", () => {
+        this.recomputeAll();
+      });
+    });
+
+    // Math Proofs Drawer
+    const drawerMath = document.getElementById("drawerMathProofs");
+    document.getElementById("btnOpenMathDrawer").onclick = () => drawerMath.classList.add("open");
+    document.getElementById("btnCloseMathDrawer").onclick = () => drawerMath.classList.remove("open");
+
+    // Modal Events
     const modalSources = document.getElementById("modalDataSources");
     document.getElementById("btnDataSources").onclick = () => modalSources.classList.add("open");
     document.getElementById("btnCloseSources").onclick = () => modalSources.classList.remove("open");
@@ -506,22 +511,23 @@ const App = {
       );
     };
 
-    // Theme Toggle
-    document.getElementById("btnThemeToggle").onclick = () => {
-      const current = document.body.getAttribute("data-theme");
-      const next = current === "dark" ? "light" : "dark";
-      document.body.setAttribute("data-theme", next);
-    };
+    // Deck Tabs
+    document.querySelectorAll(".deck-tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".deck-tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".deck-pane-content").forEach(c => c.classList.remove("active"));
 
-    // Live API Refresh
-    document.getElementById("btnRefreshAPI").onclick = e => {
-      e.preventDefault();
-      this.fetchLiveAPIData();
-    };
+        btn.classList.add("active");
+        const tabId = btn.dataset.tab;
+        document.getElementById(tabId).classList.add("active");
+
+        ChartVisualizer.resizeAll();
+      });
+    });
   }
 };
 
-// Auto Start
+// Startup
 window.addEventListener("DOMContentLoaded", () => {
   App.init();
 });
